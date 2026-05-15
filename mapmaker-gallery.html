@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌍 Schools Living Atlas Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --sky:        #E8F4FD;
+  --sky-mid:    #C5E4F8;
+  --ocean:      #1A8FE3;
+  --ocean-dk:   #1472BF;
+  --grass:      #4CAF50;
+  --grass-dk:   #388E3C;
+  --sun:        #FFB300;
+  --sun-lt:     #FFF3CC;
+  --coral:      #FF6B6B;
+  --coral-lt:   #FFE8E8;
+  --mint:       #26C6A6;
+  --mint-lt:    #D8F5EF;
+  --purple:     #7C4DFF;
+  --purple-lt:  #EDE7FF;
+  --peach:      #FF8A65;
+  --peach-lt:   #FBE9E7;
+  --bg:         #F0F7FF;
+  --white:      #FFFFFF;
+  --text:       #1D2B3A;
+  --text-mid:   #4A6378;
+  --text-lt:    #7A94A8;
+  --border:     #D4E8F7;
+  --shadow:     rgba(26,143,227,0.12);
+  --radius:     16px;
+  --radius-sm:  10px;
+  --pill:       999px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(26,143,227,0.06) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(76,175,80,0.06) 0%, transparent 40%);
+}
+
+/* HEADER */
+header {
+  background: var(--white);
+  border-bottom: 3px solid var(--sky-mid);
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  height: 72px;
+  box-shadow: 0 2px 12px var(--shadow);
+}
+
+.logo-bar { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+.logo-globe {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--ocean), var(--mint));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 3px 10px rgba(26,143,227,0.3);
+  animation: float 3s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+.logo-text {
+  font-family: 'Fredoka One', cursive;
+  font-size: 22px; color: var(--ocean);
+  letter-spacing: 0.5px; white-space: nowrap; line-height: 1;
+}
+.logo-text .g { color: var(--grass); }
+
+.header-search { flex: 1; max-width: 500px; position: relative; }
+
+.header-search input {
+  width: 100%;
+  background: var(--sky);
+  border: 2px solid var(--border);
+  border-radius: var(--pill);
+  padding: 10px 18px 10px 44px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px; font-weight: 600;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.header-search input::placeholder { color: var(--text-lt); font-weight: 400; }
+.header-search input:focus {
+  border-color: var(--ocean);
+  box-shadow: 0 0 0 4px rgba(26,143,227,.1);
+  background: var(--white);
+}
+.search-icon {
+  position: absolute; left: 14px; top: 50%;
+  transform: translateY(-50%); font-size: 18px; pointer-events: none;
+}
+
+.header-right { margin-left: auto; flex-shrink: 0; }
+
+.count-badge {
+  background: var(--sun-lt);
+  border: 2px solid #FFD54F;
+  border-radius: var(--pill);
+  padding: 5px 14px;
+  font-size: 13px; font-weight: 700; color: #7A5800;
+  display: flex; align-items: center; gap: 5px;
+}
+
+/* HERO */
+.hero {
+  background: linear-gradient(135deg, var(--ocean) 0%, #0D6EBF 50%, #0AADA8 100%);
+  padding: 28px 2rem 24px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.hero-text h1 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 26px; color: #fff; line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.hero-text p { font-size: 14px; color: rgba(255,255,255,.85); margin-top: 4px; font-weight: 600; }
+.hero-icons { font-size: 28px; display: flex; gap: 6px; margin-left: auto; }
+.hero-icons span { display: inline-block; animation: bounce 1.6s ease-in-out infinite; }
+.hero-icons span:nth-child(2) { animation-delay: .2s; }
+.hero-icons span:nth-child(3) { animation-delay: .4s; }
+.hero-icons span:nth-child(4) { animation-delay: .6s; }
+.hero-icons span:nth-child(5) { animation-delay: .8s; }
+@keyframes bounce {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  40%      { transform: translateY(-8px) rotate(5deg); }
+}
+
+/* FILTERS */
+.filters-bar {
+  background: var(--white);
+  border-bottom: 2px solid var(--border);
+  padding: 12px 2rem;
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+}
+.filters-label {
+  font-size: 12px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .8px; color: var(--text-lt); margin-right: 2px;
+}
+.filter-btn {
+  background: var(--sky); border: 2px solid var(--border);
+  border-radius: var(--pill); padding: 6px 16px;
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+  color: var(--text-mid); cursor: pointer;
+  transition: all .18s; white-space: nowrap;
+  display: flex; align-items: center; gap: 5px;
+}
+.filter-btn:hover {
+  background: var(--sky-mid); border-color: var(--ocean);
+  color: var(--ocean-dk); transform: translateY(-1px);
+}
+.filter-btn.active {
+  background: var(--ocean); border-color: var(--ocean);
+  color: #fff; box-shadow: 0 3px 10px rgba(26,143,227,.3);
+}
+.filter-sep { width: 1px; height: 22px; background: var(--border); margin: 0 4px; }
+
+select.filter-select {
+  background: var(--sky); border: 2px solid var(--border);
+  border-radius: var(--pill); padding: 6px 32px 6px 14px;
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+  color: var(--text-mid); cursor: pointer; outline: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A6378'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  transition: border-color .18s;
+}
+select.filter-select:focus { border-color: var(--ocean); }
+
+/* MAIN */
+.main { padding: 1.5rem 2rem 3rem; max-width: 1400px; margin: 0 auto; }
+.results-info {
+  font-size: 13px; font-weight: 700; color: var(--text-lt);
+  margin-bottom: 1.25rem; display: flex; align-items: center; gap: 6px;
+}
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px,1fr)); gap: 20px; }
+
+/* CARD */
+.card {
+  background: var(--white);
+  border: 2px solid var(--border); border-radius: 20px;
+  overflow: hidden; display: flex; flex-direction: column;
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1), border-color .2s, box-shadow .2s;
+  animation: popIn .35s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(.88) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.card:hover {
+  transform: translateY(-6px) scale(1.01);
+  border-color: var(--ocean);
+  box-shadow: 0 12px 36px rgba(26,143,227,.18);
+}
+.card.type-wm  { border-top: 4px solid var(--ocean); }
+.card.type-fs  { border-top: 4px solid var(--grass); }
+.card.type-oth { border-top: 4px solid var(--peach); }
+
+.card-thumb {
+  position: relative; width: 100%; padding-top: 54%;
+  overflow: hidden; background: var(--sky);
+}
+.card-thumb img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; transition: transform .4s ease;
+}
+.card:hover .card-thumb img { transform: scale(1.06); }
+
+.thumb-placeholder {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px;
+  background: linear-gradient(135deg, var(--sky) 0%, var(--sky-mid) 100%);
+}
+.thumb-placeholder .ph-em  { font-size: 42px; }
+.thumb-placeholder .ph-lbl { font-size: 11px; font-weight: 700; color: var(--text-lt); }
+
+.type-pill {
+  position: absolute; top: 10px; left: 10px;
+  font-size: 11px; font-weight: 800;
+  padding: 4px 11px; border-radius: var(--pill);
+  display: flex; align-items: center; gap: 4px;
+  backdrop-filter: blur(6px);
+}
+.type-pill.wm  { background: rgba(26,143,227,.88); color: #fff; }
+.type-pill.fs  { background: rgba(76,175,80,.88);  color: #fff; }
+.type-pill.oth { background: rgba(255,138,101,.88); color: #fff; }
+
+.views-pill {
+  position: absolute; top: 10px; right: 10px;
+  background: rgba(255,255,255,.88); backdrop-filter: blur(6px);
+  border-radius: var(--pill); padding: 4px 10px;
+  font-size: 11px; font-weight: 700; color: var(--text-mid);
+}
+
+.card-body {
+  padding: 16px 18px 10px; flex: 1;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.card-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 17px; color: var(--text); line-height: 1.25;
+}
+.card-desc {
+  font-size: 13px; color: var(--text-mid); line-height: 1.6;
+  overflow: hidden; max-height: 4.8em;
+  word-break: break-word;
+}
+.card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+
+.tag {
+  font-size: 11px; font-weight: 700;
+  border-radius: var(--pill); padding: 3px 10px;
+}
+.tag:nth-child(1) { background: var(--mint-lt);   color: #0D7A62; }
+.tag:nth-child(2) { background: var(--purple-lt);  color: #4527A0; }
+.tag:nth-child(n+3){ background: var(--peach-lt); color: #BF360C; }
+
+.card-footer { padding: 10px 14px 14px; display: flex; gap: 8px; align-items: center; }
+
+.btn-launch {
+  flex: 1;
+  background: linear-gradient(135deg, var(--ocean) 0%, #0D6EBF 100%);
+  color: #fff; border: none; border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+  text-decoration: none;
+  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 4px 12px rgba(26,143,227,.3);
+  white-space: nowrap;
+}
+.btn-launch:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 18px rgba(26,143,227,.4); }
+.btn-launch:active { transform: scale(.97); }
+
+.btn-item {
+  background: var(--sky); border: 2px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
+  color: var(--text-mid); cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  text-decoration: none; transition: all .15s; white-space: nowrap;
+}
+.btn-item:hover { background: var(--sky-mid); border-color: var(--ocean); color: var(--ocean-dk); transform: translateY(-1px); }
+
+/* STATE */
+.state-msg { grid-column: 1/-1; text-align: center; padding: 5rem 2rem; color: var(--text-lt); }
+.spinner {
+  width: 52px; height: 52px;
+  border: 4px solid var(--sky-mid); border-top-color: var(--ocean);
+  border-radius: 50%; animation: spin .75s linear infinite; margin: 0 auto 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.state-msg p { font-size: 15px; font-weight: 600; margin-top: 6px; }
+.state-msg .big-em { font-size: 56px; margin-bottom: 12px; display: block; }
+
+/* MODAL */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(14,44,74,.55); backdrop-filter: blur(4px);
+  z-index: 200; align-items: center; justify-content: center; padding: 1.5rem;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--white); border: 2px solid var(--border); border-radius: 24px;
+  max-width: 680px; width: 100%; max-height: 85vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: 0 24px 64px rgba(14,44,74,.25);
+  animation: mPop .3s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes mPop {
+  from { transform: scale(.85); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+  padding: 20px 24px 16px; border-bottom: 2px solid var(--border);
+  display: flex; align-items: flex-start; gap: 12px; background: var(--sky);
+}
+.modal-header h2 { font-family: 'Fredoka One', cursive; font-size: 22px; color: var(--text); flex: 1; line-height: 1.25; }
+
+.modal-close {
+  background: var(--white); border: 2px solid var(--border);
+  border-radius: 50%; color: var(--text-mid); cursor: pointer;
+  font-size: 15px; width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all .15s; font-weight: 800;
+}
+.modal-close:hover { background: var(--coral-lt); border-color: var(--coral); color: var(--coral); transform: rotate(90deg); }
+
+.modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+
+.modal-body .modal-thumb {
+  width: 100%; border-radius: 14px; margin-bottom: 16px;
+  max-height: 220px; object-fit: cover; border: 2px solid var(--border);
+}
+
+.modal-body .desc-html { font-size: 14px; color: var(--text-mid); line-height: 1.7; }
+.modal-body .desc-html a { color: var(--ocean); font-weight: 600; }
+.modal-body .desc-html p { margin-bottom: 10px; }
+.modal-body .desc-html ul { padding-left: 20px; margin-bottom: 10px; }
+.modal-body .desc-html span { color: var(--text-mid) !important; font-size: 14px !important; }
+.modal-body .desc-html font { font-size: 14px !important; }
+
+.modal-footer {
+  padding: 14px 24px; border-top: 2px solid var(--border);
+  display: flex; gap: 10px; background: var(--sky);
+}
+
+@media (max-width: 700px) {
+  header { padding: 0 1rem; height: 64px; gap: 8px; }
+  .logo-text { font-size: 18px; }
+  .hero { padding: 18px 1rem; }
+  .filters-bar { padding: 10px 1rem; }
+  .main { padding: 1rem; }
+  .grid { grid-template-columns: 1fr; }
+  .hero-icons { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-bar">
+    <div class="logo-globe">🌍</div>
+    <div class="logo-text">Schools <span class="g">Living Atlas</span> Explorer</div>
+  </div>
+  <div class="header-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search for maps and data…" oninput="applyFilters()">
+  </div>
+  <div class="header-right">
+    <div class="count-badge">🗺️ <strong id="visibleCount">—</strong> of <strong id="totalCount">—</strong></div>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-text">
+    <h1>Explore Our World with Maps! 🌎</h1>
+    <p>Discover amazing maps and data layers from the Schools Living Atlas</p>
+  </div>
+
+</div>
+
+<div class="filters-bar">
+  <span class="filters-label">Show</span>
+  <button class="filter-btn active" onclick="setTypeFilter('all',this)">🌐 All</button>
+  <button class="filter-btn" onclick="setTypeFilter('Web Map',this)">🗺️ Web Maps</button>
+  <button class="filter-btn" onclick="setTypeFilter('Feature Service',this)">📍 Layers</button>
+  <div class="filter-sep"></div>
+  <span class="filters-label">Sort</span>
+  <select class="filter-select" id="sortSelect" onchange="applyFilters()">
+    <option value="title">🔤 A to Z</option>
+    <option value="title-desc">🔤 Z to A</option>
+    <option value="views">⭐ Most popular</option>
+    <option value="modified">🆕 Recently updated</option>
+  </select>
+</div>
+
+<div class="main">
+  <div class="results-info" id="resultsInfo"></div>
+  <div class="grid" id="grid">
+    <div class="state-msg"><div class="spinner"></div><p>Loading amazing maps… 🚀</p></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <h2 id="modalTitle"></h2>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body">
+      <img id="modalThumb" class="modal-thumb" src="" alt="" style="display:none">
+      <div class="desc-html" id="modalDesc"></div>
+    </div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<script>
+const MM_APP    = 'https://www.arcgis.com/apps/instant/atlas/index.html?appid=0cd1cdee853c413a84bfe4b9a6931f0d&webmap=';
+const MAP_VIEWER = 'https://education.maps.arcgis.com/apps/mapviewer/index.html?webmap=';
+const ITEM_URL  = 'https://www.arcgis.com/home/item.html?id=';
+const THUMB_BASE= 'https://www.arcgis.com/sharing/rest/content/items/';
+const GROUP_ID  = '36443e9570294a1f883b5d2c5abfe6b5';
+const API_BASE  = `https://www.arcgis.com/sharing/rest/content/groups/${GROUP_ID}?f=json&num=100&sortField=title&sortOrder=asc`;
+
+let allItems = [];
+let typeFilter = 'all';
+let renderedItems = [];
+
+function placeholderEmoji(item) {
+  const t = (item.title + ' ' + (item.tags||[]).join(' ')).toLowerCase();
+  if (/bear|wolf|lion|tiger|animal|wildlife|species|bird|fish|coral|whale|elephant/.test(t)) return '🦁';
+  if (/earthquake|volcano|eruption|tsunami|disaster|hazard|storm|hurricane|tornado/.test(t)) return '⚡';
+  if (/ocean|sea|marine|reef/.test(t)) return '🌊';
+  if (/river|lake|water|flood|precipitation|rain/.test(t)) return '💧';
+  if (/forest|biome|tree|jungle|rainforest|mangrove|woodland/.test(t)) return '🌿';
+  if (/mountain|elevation|terrain|geology|tectonic/.test(t)) return '🏔️';
+  if (/city|urban|population|megacity/.test(t)) return '🏙️';
+  if (/climate|temperature|snow|weather|drought/.test(t)) return '🌤️';
+  if (/fire|wildfire/.test(t)) return '🔥';
+  if (/ice|glacier|arctic|polar/.test(t)) return '🧊';
+  if (/solar|energy|wind|renewable/.test(t)) return '☀️';
+  if (/planet|space|moon/.test(t)) return '🪐';
+  if (/health|disease|cholera|pandemic/.test(t)) return '🏥';
+  if (/food|crop|agriculture|farm/.test(t)) return '🌾';
+  if (/history|ancient|civilization|heritage/.test(t)) return '🏛️';
+  if (/desert|arid/.test(t)) return '🏜️';
+  if (/pollution|plastic|waste/.test(t)) return '♻️';
+  return '🗺️';
+}
+
+function cleanText(str, maxLen) {
+  return (str || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&[a-zA-Z0-9#]+;/g, ' ')
+    .replace(/[^a-zA-Z0-9 .,!?()\-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, maxLen);
+}
+
+function firstSentence(str) {
+  const clean = cleanText(str, 400);
+  const m = clean.match(/^[^.!?]+[.!?]/);
+  return m ? m[0].trim() : clean.slice(0, 120).trim();
+}
+
+function thumbUrl(item) {
+  if (!item.thumbnail) return null;
+  return `${THUMB_BASE}${item.id}/info/${item.thumbnail}`;
+}
+
+function tcls(type) {
+  if (type === 'Web Map') return 'wm';
+  if (type === 'Feature Service') return 'fs';
+  return 'oth';
+}
+
+function tlabel(type) {
+  if (type === 'Web Map') return '🗺️ Web Map';
+  if (type === 'Feature Service') return '📍 Layer';
+  return '🔲 ' + type;
+}
+
+function cardCls(type) {
+  if (type === 'Web Map') return 'type-wm';
+  if (type === 'Feature Service') return 'type-fs';
+  return 'type-oth';
+}
+
+function fmtV(n) {
+  if (!n) return null;
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return Math.round(n/1e3) + 'K';
+  return n.toLocaleString();
+}
+
+function getCats(item) {
+  return (item.groupCategories || item.categories || [])
+    .map(c => c.replace('/Categories/', '').replace(/\//g,' / ')).filter(Boolean);
+}
+
+function buildCard(item, idx) {
+  const thumb = thumbUrl(item);
+  const isWM  = item.type === 'Web Map';
+  const cats  = getCats(item);
+  const views = fmtV(item.numViews);
+  const delay = Math.min(idx * 25, 400);
+  const snippet = cleanText(item.snippet, 200);
+  const em = placeholderEmoji(item);
+
+  const thumbHtml = thumb
+    ? `<img src="${thumb}" alt="${item.title.replace(/"/g,'&quot;')}" loading="lazy"
+         onerror="this.parentElement.innerHTML='<div class=thumb-placeholder><span class=ph-em>${em}</span><span class=ph-lbl>Map preview</span></div>'">`
+    : `<div class="thumb-placeholder"><span class="ph-em">${em}</span><span class="ph-lbl">Map preview</span></div>`;
+
+  const vp = views ? `<div class="views-pill">⭐ ${views}</div>` : '';
+
+  const launchBtn = isWM
+    ? `<a class="btn-launch" href="${MM_APP}${item.id}" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Launch in MapMaker
+       </a>
+       <a class="btn-item" href="${MAP_VIEWER}${item.id}" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9l4-4 4 4 4-5 4 4"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>
+        Map Viewer
+       </a>`
+    : `<a class="btn-item" href="${ITEM_URL}${item.id}" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        View Details
+       </a>`;
+
+  const desc = firstSentence(item.snippet);
+  const descEsc = desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  return `<div class="card ${cardCls(item.type)}" style="animation-delay:${delay}ms">
+    <div class="card-thumb">
+      ${thumbHtml}
+      <span class="type-pill ${tcls(item.type)}">${tlabel(item.type)}</span>
+      ${vp}
+    </div>
+    <div class="card-body">
+      <div class="card-title">${cleanText(item.title, 100)}</div>
+      <div class="card-desc">${descEsc}</div>
+    </div>
+    <div class="card-footer">
+      ${launchBtn}
+    </div>
+  </div>`;
+}
+
+function setTypeFilter(val, btn) {
+  typeFilter = val;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters() {
+  const q    = document.getElementById('searchInput').value.toLowerCase().trim();
+  const sort = document.getElementById('sortSelect').value;
+
+  let f = allItems.filter(item => {
+    if (typeFilter !== 'all' && item.type !== typeFilter) return false;
+    if (q) { const hay = (item.title+' '+(item.snippet||'')+' '+(item.tags||[]).join(' ')).toLowerCase(); if (!hay.includes(q)) return false; }
+    return true;
+  });
+
+  f.sort((a,b) => {
+    if (sort==='title')      return a.title.localeCompare(b.title);
+    if (sort==='title-desc') return b.title.localeCompare(a.title);
+    if (sort==='views')      return (b.numViews||0)-(a.numViews||0);
+    if (sort==='modified')   return (b.modified||0)-(a.modified||0);
+    return 0;
+  });
+
+  document.getElementById('visibleCount').textContent = f.length;
+  const ri = document.getElementById('resultsInfo');
+  if (!f.length) ri.textContent = '';
+  else if (f.length === allItems.length) ri.innerHTML = `🗺️ Showing all <strong>${allItems.length}</strong> maps and layers`;
+  else ri.innerHTML = `🔎 Found <strong>${f.length}</strong> of ${allItems.length} items`;
+
+  const grid = document.getElementById('grid');
+  if (!f.length) { grid.innerHTML = `<div class="state-msg"><span class="big-em">🔍</span><p>No maps found! Try different words.</p></div>`; return; }
+  renderedItems = f;
+  grid.innerHTML = f.map((item,i) => buildCard(item,i)).join('');
+}
+
+function openModal(idx) {
+  const item = renderedItems[idx];
+  if (!item) return;
+  const thumb = thumbUrl(item);
+  const img = document.getElementById('modalThumb');
+  if (thumb) { img.src=thumb; img.style.display='block'; img.alt=item.title; }
+  else img.style.display='none';
+
+  document.getElementById('modalTitle').textContent = item.title;
+  document.getElementById('modalDesc').textContent = cleanText(item.snippet, 200);
+
+  const footer = document.getElementById('modalFooter');
+  const isWM = item.type === 'Web Map';
+  footer.innerHTML = isWM
+    ? `<a class="btn-launch" href="${MM_APP}${item.id}" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Launch in MapMaker
+       </a>
+       <a class="btn-item" href="${MAP_VIEWER}${item.id}" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9l4-4 4 4 4-5 4 4"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>
+        Map Viewer
+       </a>
+       <a class="btn-item" href="${ITEM_URL}${item.id}" target="_blank">🔗 Item page</a>`
+    : `<a class="btn-item" href="${ITEM_URL}${item.id}" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        View ArcGIS item
+       </a>`;
+
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) { if (e.target === document.getElementById('modal')) closeModalDirect(); }
+function closeModalDirect() { document.getElementById('modal').classList.remove('open'); document.body.style.overflow=''; }
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeModalDirect(); });
+
+async function loadData() {
+  try {
+    let items = [];
+    let start = 1;
+    while (true) {
+      const res  = await fetch(`${API_BASE}&start=${start}`);
+      const json = await res.json();
+      items = items.concat(json.items || []);
+      if (json.nextStart && json.nextStart > 0) {
+        start = json.nextStart;
+      } else {
+        break;
+      }
+    }
+    allItems = items;
+    document.getElementById('totalCount').textContent = allItems.length;
+    applyFilters();
+  } catch(err) {
+    document.getElementById('grid').innerHTML = `<div class="state-msg">
+      <span class="big-em">😕</span>
+      <p>Oops! Couldn't load maps right now.<br><small style="color:#aaa">${err.message}</small></p>
+    </div>`;
+  }
+}
+
+loadData();
+</script>
+
+<footer style="text-align:center;padding:18px 2rem;border-top:2px solid var(--border);background:var(--white);margin-top:2rem;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;color:var(--text-lt);letter-spacing:0.3px;">
+  🌍 Schools Living Atlas Explorer &nbsp;·&nbsp; v3.0
+</footer>
+
+</body>
+</html>

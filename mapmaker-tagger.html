@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🗺️ Copy maps into Mapmaker - My Maps</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --sky:      #1a91d1;
+  --sky-lt:   #e8f5fd;
+  --sky-md:   #b8dff5;
+  --ocean:    #0d6fa8;
+  --leaf:     #2dac6e;
+  --leaf-lt:  #e6f8f1;
+  --sun:      #f59e0b;
+  --sun-lt:   #fef3c7;
+  --coral:    #ef4444;
+  --coral-lt: #fee2e2;
+  --sand:     #fdf6e3;
+  --earth:    #92400e;
+  --ink:      #1e293b;
+  --slate:    #475569;
+  --mist:     #94a3b8;
+  --white:    #ffffff;
+  --border:   #cbd5e1;
+  --border-lt:#e2e8f0;
+  --radius:   16px;
+  --shadow:   0 4px 20px rgba(0,0,0,0.08);
+  --font:     'Nunito', sans-serif;
+  --mono:     'Fira Code', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--sand);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 700px 320px at 10% 15%, rgba(26,145,209,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 500px at 85% 75%, rgba(45,172,110,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 400px at 50% 50%, rgba(245,158,11,0.05) 0%, transparent 70%),
+    linear-gradient(rgba(26,145,209,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26,145,209,0.05) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 52px 52px, 52px 52px;
+  pointer-events: none;
+  z-index: 0;
+}
+.page-wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
+
+/* ── HERO ─────────────────────────────────────── */
+.hero {
+  text-align: center;
+  padding: 44px 28px 38px;
+  margin-bottom: 28px;
+  background: linear-gradient(145deg, #1a91d1 0%, #0d6fa8 55%, #0a5a8a 100%);
+  border-radius: 24px;
+  color: white;
+  box-shadow: 0 10px 40px rgba(26,145,209,0.45), 0 2px 0 rgba(255,255,255,0.1) inset;
+  position: relative;
+  overflow: hidden;
+  animation: heroIn 0.65s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes heroIn {
+  from { opacity: 0; transform: translateY(-22px); }
+  to   { opacity: 1; transform: none; }
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(-55deg, transparent, transparent 22px, rgba(255,255,255,0.035) 22px, rgba(255,255,255,0.035) 23px);
+  pointer-events: none;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30px; right: -30px;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  pointer-events: none;
+}
+.hero-icons {
+  font-size: 42px;
+  letter-spacing: 8px;
+  margin-bottom: 16px;
+  display: block;
+  animation: iconsIn 0.8s cubic-bezier(0.22,1,0.36,1) 0.12s both;
+  position: relative;
+}
+@keyframes iconsIn {
+  from { opacity: 0; transform: scale(0.6) rotate(-5deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+.hero h1 {
+  font-size: clamp(28px, 6vw, 44px);
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  text-shadow: 0 3px 16px rgba(0,0,0,0.25);
+  margin-bottom: 12px;
+  position: relative;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(90deg, #fde68a, #fbbf24, #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: 15px;
+  font-weight: 600;
+  opacity: 0.9;
+  line-height: 1.6;
+  max-width: 500px;
+  margin: 0 auto 20px;
+  position: relative;
+}
+.hero-sub code {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: rgba(255,255,255,0.18);
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,0.28);
+  border-radius: 100px;
+  padding: 8px 20px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  position: relative;
+}
+
+/* ── HOW-IT-WORKS ─────────────────────────────── */
+.how-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+  animation: slideUp 0.5s cubic-bezier(0.22,1,0.36,1) 0.1s both;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.how-item {
+  background: var(--white);
+  border: 2px solid var(--border-lt);
+  border-radius: 14px;
+  padding: 18px 14px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.how-item:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.11); }
+.how-item .hw-icon  { font-size: 30px; margin-bottom: 9px; display: block; }
+.how-item .hw-title { font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 5px; }
+.how-item .hw-desc  { font-size: 12px; font-weight: 600; color: var(--mist); line-height: 1.45; }
+
+/* ── CARDS ────────────────────────────────────── */
+.card {
+  background: var(--white);
+  border: 2.5px solid var(--border-lt);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.card:nth-of-type(1) { animation: slideUp 0.5s cubic-bezier(0.22,1,0.36,1) 0.2s both; }
+.card:nth-of-type(2) { animation: slideUp 0.5s cubic-bezier(0.22,1,0.36,1) 0.3s both; }
+.card:focus-within {
+  border-color: var(--sky);
+  box-shadow: 0 0 0 4px rgba(26,145,209,0.1), var(--shadow);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 2px dashed var(--border-lt);
+}
+.step-num {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sky), var(--ocean));
+  color: white;
+  font-size: 18px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 3px 12px rgba(26,145,209,0.4);
+}
+.step-info h2 { font-size: 17px; font-weight: 800; color: var(--ink); }
+.step-info p  { font-size: 13px; font-weight: 600; color: var(--mist); margin-top: 3px; }
+.step-icon    { margin-left: auto; font-size: 32px; }
+
+/* ── FORM ELEMENTS ────────────────────────────── */
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--slate);
+  margin-bottom: 9px;
+}
+.field-label .licon { font-size: 17px; }
+
+textarea,
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  background: var(--sky-lt);
+  border: 2px solid var(--sky-md);
+  border-radius: 12px;
+  padding: 13px 16px;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  line-height: 1.7;
+}
+textarea:focus,
+input[type="text"]:focus,
+input[type="password"]:focus {
+  border-color: var(--sky);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(26,145,209,0.13);
+}
+textarea { resize: vertical; min-height: 108px; }
+.field-gap { height: 16px; }
+
+.hint-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: var(--sun-lt);
+  border: 2px solid #fcd34d;
+  border-radius: 12px;
+  padding: 13px 15px;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--earth);
+  line-height: 1.55;
+}
+.hint-box .hicon { font-size: 18px; flex-shrink: 0; margin-top: 0px; }
+.hint-box code {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  background: rgba(0,0,0,0.07);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+/* ── CHECKBOX ─────────────────────────────────── */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--leaf-lt);
+  border: 2px solid #86efac;
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: background 0.15s;
+}
+.checkbox-row:hover { background: #d1fae5; }
+.checkbox-row input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 24px; height: 24px;
+  border: 2.5px solid #4ade80;
+  border-radius: 7px;
+  background: white;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  transition: all 0.15s;
+  display: grid;
+  place-content: center;
+}
+.checkbox-row input[type="checkbox"]::before {
+  content: "✓";
+  font-size: 14px;
+  font-weight: 900;
+  color: white;
+  line-height: 1;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.15s, transform 0.15s;
+  font-family: var(--font);
+}
+.checkbox-row input[type="checkbox"]:checked {
+  background: var(--leaf);
+  border-color: var(--leaf);
+}
+.checkbox-row input[type="checkbox"]:checked::before {
+  opacity: 1;
+  transform: scale(1);
+}
+.cb-label { font-size: 14px; font-weight: 800; color: #166534; line-height: 1.3; }
+.cb-sub   { display: block; font-size: 12px; font-weight: 600; color: #16a34a; margin-top: 3px; }
+
+/* ── TOKEN NOTICE ─────────────────────────────── */
+.token-notice {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  background: var(--leaf-lt);
+  border: 2px solid #86efac;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #166534;
+}
+.token-notice .tn-icon { font-size: 24px; flex-shrink: 0; }
+.token-notice a {
+  color: var(--leaf);
+  font-weight: 800;
+  font-size: 13px;
+  text-decoration: underline;
+  margin-left: 8px;
+}
+
+/* ── BUTTON ───────────────────────────────────── */
+.btn-wrap { animation: slideUp 0.5s cubic-bezier(0.22,1,0.36,1) 0.4s both; }
+
+.btn-primary {
+  width: 100%;
+  padding: 19px 30px;
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ea580c 100%);
+  border: none;
+  border-radius: 16px;
+  color: white;
+  font-family: var(--font);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+  box-shadow: 0 6px 28px rgba(249,115,22,0.5), 0 1px 0 rgba(255,255,255,0.2) inset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%);
+  pointer-events: none;
+  border-radius: 16px 16px 0 0;
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 36px rgba(249,115,22,0.6);
+}
+.btn-primary:active:not(:disabled) { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-icon { font-size: 22px; }
+.spinner {
+  display: none;
+  width: 22px; height: 22px;
+  border: 3px solid rgba(255,255,255,0.35);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── RESULTS ──────────────────────────────────── */
+#results {
+  display: none;
+  background: white;
+  border: 2.5px solid var(--border-lt);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  margin-top: 22px;
+  animation: slideUp 0.4s cubic-bezier(0.22,1,0.36,1) both;
+}
+.results-header {
+  padding: 16px 22px;
+  background: linear-gradient(90deg, var(--sky) 0%, var(--ocean) 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.results-title {
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.results-count {
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(255,255,255,0.18);
+  padding: 5px 14px;
+  border-radius: 100px;
+  letter-spacing: 0.02em;
+}
+#log {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 440px;
+  overflow-y: auto;
+}
+#log::-webkit-scrollbar { width: 6px; }
+#log::-webkit-scrollbar-track { background: #f1f5f9; }
+#log::-webkit-scrollbar-thumb { background: var(--sky-md); border-radius: 3px; }
+
+.log-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 15px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  animation: logIn 0.3s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes logIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: none; }
+}
+.log-item.info    { background: var(--sky-lt);   border-left: 4px solid var(--sky);   color: #1e3a5f; }
+.log-item.success { background: var(--leaf-lt);  border-left: 4px solid var(--leaf);  color: #14532d; }
+.log-item.error   { background: var(--coral-lt); border-left: 4px solid var(--coral); color: #7f1d1d; }
+.log-item.warning { background: var(--sun-lt);   border-left: 4px solid var(--sun);   color: var(--earth); }
+
+.log-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.log-body { flex: 1; min-width: 0; }
+.log-body strong { display: block; font-weight: 800; margin-bottom: 4px; }
+.log-id {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: rgba(0,0,0,0.07);
+  padding: 3px 8px;
+  border-radius: 5px;
+  display: inline-block;
+  margin-top: 3px;
+  word-break: break-all;
+  font-weight: 400;
+}
+.log-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 7px;
+  color: var(--ocean);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  background: rgba(26,145,209,0.12);
+  padding: 5px 12px;
+  border-radius: 7px;
+  transition: background 0.15s;
+}
+.log-link:hover { background: rgba(26,145,209,0.22); }
+
+/* ── FOOTER ───────────────────────────────────── */
+footer {
+  text-align: center;
+  margin-top: 44px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mist);
+  line-height: 1.7;
+}
+footer strong { color: var(--slate); }
+
+/* ── RESPONSIVE ───────────────────────────────── */
+@media (max-width: 540px) {
+  .how-strip { grid-template-columns: 1fr; gap: 10px; }
+  .hero { padding: 32px 20px 28px; }
+  .hero h1 { font-size: 26px; }
+  .card { padding: 20px; }
+  .hero-icons { font-size: 32px; letter-spacing: 6px; }
+}
+
+/* ── DEBUG PANEL ──────────────────────────────────────────────────── */
+.debug-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 0;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mist);
+}
+.debug-toggle input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none;
+  width: 36px; height: 20px;
+  background: var(--border);
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.debug-toggle input[type="checkbox"]::after {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
+  background: white;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.debug-toggle input[type="checkbox"]:checked { background: var(--sun); }
+.debug-toggle input[type="checkbox"]:checked::after { left: 19px; }
+
+#debugPanel {
+  display: none;
+  background: #0d1117;
+  border: 2px solid #30363d;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-top: 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.debug-header {
+  background: #161b22;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #30363d;
+  color: #8b949e;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.debug-copy-btn {
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #8b949e;
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.debug-copy-btn:hover { background: #30363d; color: #e6edf3; }
+#debugLog {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 500px;
+  overflow-y: auto;
+  color: #e6edf3;
+}
+#debugLog::-webkit-scrollbar { width: 5px; }
+#debugLog::-webkit-scrollbar-track { background: #0d1117; }
+#debugLog::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+.dbg-entry { border-left: 3px solid #30363d; padding-left: 12px; }
+.dbg-entry.req  { border-color: #388bfd; }
+.dbg-entry.res  { border-color: #3fb950; }
+.dbg-entry.err  { border-color: #f85149; }
+.dbg-entry.info { border-color: #d29922; }
+.dbg-ts  { color: #6e7681; font-size: 10px; margin-bottom: 3px; }
+.dbg-lbl { font-weight: 700; margin-bottom: 4px; }
+.dbg-lbl.req  { color: #388bfd; }
+.dbg-lbl.res  { color: #3fb950; }
+.dbg-lbl.err  { color: #f85149; }
+.dbg-lbl.info { color: #d29922; }
+.dbg-body {
+  color: #8b949e;
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.6;
+  max-height: 180px;
+  overflow-y: auto;
+  background: #010409;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-top: 4px;
+  font-size: 11px;
+}
+.dbg-body::-webkit-scrollbar { width: 4px; }
+.dbg-body::-webkit-scrollbar-thumb { background: #30363d; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- HERO -->
+  <header class="hero">
+    <span class="hero-icons">🗺️ 📍 🌐</span>
+    <h1>Copy maps into <em>Mapmaker - My Maps</em></h1>
+    <p class="hero-sub">
+      Copy Web Maps to your personal My Maps folder in Mapmaker — a classroom tool for teachers &amp; students.
+    </p>
+    <div class="hero-badge">🎓 ArcGIS Online Classroom Tool</div>
+  </header>
+
+  <!-- HOW IT WORKS -->
+  <div class="how-strip">
+    <div class="how-item">
+      <span class="hw-icon">🔍</span>
+      <div class="hw-title">Paste Item IDs</div>
+      <div class="hw-desc">Grab your 32-character map ID from the ArcGIS Online item page</div>
+    </div>
+    <div class="how-item">
+      <span class="hw-icon">🔑</span>
+      <div class="hw-title">Sign In</div>
+      <div class="hw-desc">Use your teacher or student ArcGIS Online account credentials</div>
+    </div>
+    <div class="how-item">
+      <span class="hw-icon">✨</span>
+      <div class="hw-title">Copy &amp; Tag</div>
+      <div class="hw-desc">A tagged copy lands in your account with "Mapmaker" added automatically</div>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="card">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-info">
+        <h2>Enter Map or Scene Item IDs</h2>
+        <p>One ID per line, or comma-separated — you can paste many at once!</p>
+      </div>
+      <span class="step-icon">🗺️</span>
+    </div>
+
+    <div class="field-label"><span class="licon">📋</span> Item IDs</div>
+    <textarea id="itemIds"
+      placeholder="Paste your ArcGIS Online item IDs here…&#10;&#10;Example:&#10;3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d&#10;a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"></textarea>
+
+    <div class="hint-box">
+      <span class="hicon">💡</span>
+      <span>
+        <strong>How to find your Item ID:</strong> In ArcGIS Online, open your Web Map or Web Scene and look at the browser URL.
+        Find the part that says <code>?id=</code> — the 32-character code after it is your Item ID.
+        Supports Web Maps &amp; Web Scenes (shallow copy) and Scene Services / Scene Layers (deep copy via SLPK).
+      </span>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="card">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-info">
+        <h2>Sign In to ArcGIS Online</h2>
+        <p>Your account is where the new tagged map copy will be saved</p>
+      </div>
+      <span class="step-icon">🔑</span>
+    </div>
+
+    <!-- Cached session banner -->
+    <div id="tokenNotice" class="token-notice">
+      <span class="tn-icon">🛡️</span>
+      <span>
+        Signed in as <strong id="tokenUser"></strong> — session active for up to 1 hour.
+        <a href="#" id="logoutLink">Sign out</a>
+      </span>
+    </div>
+
+    <!-- Login fields -->
+    <div id="loginFields">
+      <div class="field-label"><span class="licon">👤</span> ArcGIS Online Username</div>
+      <input type="text" id="username" placeholder="your_agol_username" autocomplete="username"/>
+
+      <div class="field-gap"></div>
+
+      <div class="field-label"><span class="licon">🔒</span> Password</div>
+      <input type="password" id="password" placeholder="••••••••••••" autocomplete="current-password"/>
+
+      <label class="checkbox-row" for="rememberMe">
+        <input type="checkbox" id="rememberMe"/>
+        <div class="cb-label">
+          ⏱️ Remember me for 1 hour
+          <span class="cb-sub">Credentials are saved only in your browser tab — never sent to any outside server</span>
+        </div>
+      </label>
+    </div>
+  </div>
+
+  <!-- RUN BUTTON -->
+  <div class="btn-wrap">
+    <button class="btn-primary" id="runBtn" onclick="run()">
+      <span class="spinner" id="btnSpinner"></span>
+      <span class="btn-icon" id="btnIcon">🚀</span>
+      <span id="btnText">Copy &amp; Tag My Maps!</span>
+    </button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="results-header">
+      <div class="results-title">📡 Operation Log</div>
+      <div class="results-count" id="resultCount">Running…</div>
+    </div>
+    <div id="log"></div>
+  </div>
+
+
+  <!-- DEBUG PANEL -->
+  <label class="debug-toggle" style="justify-content:flex-end">
+    <input type="checkbox" id="debugToggle" onchange="toggleDebug(this.checked)"/>
+    🔬 Debug mode
+  </label>
+  <div id="debugPanel">
+    <div class="debug-header">
+      <span>🔬 Debug Log — HTTP Requests &amp; Responses</span>
+      <button class="debug-copy-btn" onclick="copyDebugLog()">📋 Copy all</button>
+    </div>
+    <div id="debugLog"><span style="color:#6e7681;font-size:11px;padding:4px 0;display:block">Enable debug mode and run an operation to see detailed request/response logs here.</span></div>
+  </div>
+
+  <footer>
+    🌍 <strong>Mapmaker Tagger</strong> &nbsp;·&nbsp; Powered by the ArcGIS REST API
+    &nbsp;·&nbsp; No server-side storage &nbsp;·&nbsp; Your credentials stay in your browser tab
+    <br><span style="font-size:11px;opacity:0.6;">v1.1.1</span>
+  </footer>
+</div>
+
+<script>
+const PORTAL    = 'https://www.arcgis.com';
+const TOKEN_KEY = 'mapmaker_token';
+const CRED_KEY  = 'mapmaker_creds';
+
+// ── Debug helpers ─────────────────────────────────────────────────────────────
+let _debugEnabled = false;
+let _debugEntries = [];  // raw strings for copy-to-clipboard
+
+function toggleDebug(on) {
+  _debugEnabled = on;
+  document.getElementById('debugPanel').style.display = on ? 'block' : 'none';
+  if (on) dbgInfo('Debug mode enabled', `Browser: ${navigator.userAgent}\nPage origin: ${location.origin || location.href}\nPortal: ${PORTAL}`);
+}
+
+function _ts() {
+  return new Date().toISOString().replace('T',' ').slice(0,23);
+}
+
+function _mask(token) {
+  if (!token || token.length < 12) return '(empty)';
+  return token.slice(0,6) + '…' + token.slice(-4) + ` (${token.length} chars)`;
+}
+
+function _dbgAppend(type, label, body) {
+  if (!_debugEnabled) return;
+  const entry = `[${_ts()}] [${type.toUpperCase()}] ${label}\n${body || ''}`;
+  _debugEntries.push(entry);
+
+  const el = document.getElementById('debugLog');
+  // Clear placeholder
+  if (el.querySelector('span')) el.innerHTML = '';
+
+  const div = document.createElement('div');
+  div.className = `dbg-entry ${type}`;
+  div.innerHTML = `
+    <div class="dbg-ts">${_ts()}</div>
+    <div class="dbg-lbl ${type}">${label}</div>
+    ${body ? `<pre class="dbg-body">${escDbg(body)}</pre>` : ''}`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+function escDbg(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function dbgReq(label, body)  { _dbgAppend('req',  '⬆ ' + label, body); }
+function dbgRes(label, body)  { _dbgAppend('res',  '⬇ ' + label, body); }
+function dbgErr(label, body)  { _dbgAppend('err',  '💥 ' + label, body); }
+function dbgInfo(label, body) { _dbgAppend('info', 'ℹ ' + label, body); }
+
+function copyDebugLog() {
+  const text = _debugEntries.join('\n' + '─'.repeat(60) + '\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.debug-copy-btn');
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy all', 2000);
+  }).catch(() => {
+    // Fallback for file:// origins where clipboard API may be blocked
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Always discard any cached token on page load.
+  // This ensures we never reuse a stale or mis-bound token from a previous session.
+  // (Credentials can still be remembered separately via the checkbox.)
+  sessionStorage.removeItem(TOKEN_KEY);
+
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(CRED_KEY) || 'null');
+    if (saved && saved.expires > Date.now()) {
+      document.getElementById('username').value    = saved.username || '';
+      document.getElementById('password').value    = saved.password || '';
+      document.getElementById('rememberMe').checked = true;
+    }
+  } catch(_) {}
+
+  document.getElementById('logoutLink').addEventListener('click', e => {
+    e.preventDefault();
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(CRED_KEY);
+    document.getElementById('tokenNotice').style.display = 'none';
+    document.getElementById('loginFields').style.display = '';
+  });
+});
+
+function showTokenBanner(username, token, expires) {
+  document.getElementById('tokenUser').textContent    = username;
+  document.getElementById('tokenNotice').style.display = 'flex';
+  document.getElementById('loginFields').style.display  = 'none';
+  window._activeToken = { token, username, expires };
+}
+
+let logCount = { success: 0, error: 0 };
+
+function clearLog() {
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('results').style.display = 'none';
+  logCount = { success: 0, error: 0 };
+  document.getElementById('resultCount').textContent = 'Running…';
+}
+
+function appendLog(type, title, detail = null, link = null) {
+  const icons = { info: '🔵', success: '✅', error: '❌', warning: '⚠️' };
+  document.getElementById('results').style.display = 'block';
+  const div = document.createElement('div');
+  div.className = `log-item ${type}`;
+  div.innerHTML = `
+    <span class="log-icon">${icons[type] || '•'}</span>
+    <div class="log-body">
+      <strong>${esc(title)}</strong>
+      ${detail ? `<div class="log-id">${esc(detail)}</div>` : ''}
+      ${link   ? `<a class="log-link" href="${esc(link)}" target="_blank" rel="noopener">🗺️ Open in ArcGIS Online ↗</a>` : ''}
+    </div>`;
+  document.getElementById('log').appendChild(div);
+  document.getElementById('log').scrollTop = 99999;
+  if (type === 'success') logCount.success++;
+  if (type === 'error')   logCount.error++;
+  document.getElementById('resultCount').textContent =
+    `✅ ${logCount.success} done  ❌ ${logCount.error} failed`;
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('runBtn');
+  btn.disabled = on;
+  document.getElementById('btnSpinner').style.display = on ? 'block' : 'none';
+  document.getElementById('btnIcon').style.display    = on ? 'none'  : 'inline';
+  document.getElementById('btnText').textContent      = on ? 'Working on it…' : 'Copy & Tag My Maps!';
+}
+
+async function getToken(username, password) {
+  const url = `${PORTAL}/sharing/rest/generateToken`;
+  const params = new URLSearchParams({
+    username,
+    password,
+    client:     'requestip',
+    expiration: '60',
+    f:          'json'
+  });
+  dbgReq('generateToken', `URL: ${url}\nclient=requestip  expiration=60\nusername=${username}  password=***`);
+  let res, raw;
+  try {
+    res = await fetch(url, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    params
+    });
+    raw = await res.text();
+  } catch(netErr) {
+    dbgErr('generateToken — network/CORS failure', `${netErr.message}\n\nThis usually means:\n• CORS preflight was blocked\n• Network is offline\n• The URL is unreachable`);
+    throw new Error(`Network error on generateToken: ${netErr.message}`);
+  }
+  dbgRes(`generateToken — HTTP ${res.status}`, `Headers: ${JSON.stringify(Object.fromEntries(res.headers))}\n\nBody: ${raw.slice(0, 800)}`);
+  let json;
+  try { json = JSON.parse(raw); }
+  catch(e) { dbgErr('generateToken — non-JSON response', raw.slice(0,500)); throw new Error(`generateToken returned non-JSON: ${raw.slice(0,200)}`); }
+  if (json.error) {
+    dbgErr('generateToken — API error', JSON.stringify(json.error, null, 2));
+    throw new Error(json.error.message || 'Authentication failed');
+  }
+  if (!json.token) { dbgErr('generateToken — no token in response', JSON.stringify(json, null, 2)); throw new Error('No token returned — check username/password'); }
+  dbgInfo('generateToken — success', `Token: ${_mask(json.token)}\nExpires: ${new Date(json.expires).toLocaleString()}`);
+  return json;
+}
+
+async function getItem(itemId, token) {
+  const url = `${PORTAL}/sharing/rest/content/items/${itemId}?f=json&token=${encodeURIComponent(token)}`;
+  dbgReq('getItem', `GET ${PORTAL}/sharing/rest/content/items/${itemId}?f=json&token=${_mask(token)}`);
+  let res, raw;
+  try {
+    res = await fetch(url);
+    raw = await res.text();
+  } catch(netErr) {
+    dbgErr(`getItem ${itemId} — network failure`, netErr.message);
+    throw new Error(`Network error fetching item ${itemId}: ${netErr.message}`);
+  }
+  dbgRes(`getItem — HTTP ${res.status}`, raw.slice(0, 600));
+  let json;
+  try { json = JSON.parse(raw); } catch(e) { throw new Error(`getItem non-JSON: ${raw.slice(0,200)}`); }
+  if (json.error) { dbgErr('getItem — API error', JSON.stringify(json.error, null, 2)); throw new Error(json.error.message); }
+  dbgInfo(`getItem — "${json.title}" (${json.type})`, `Owner: ${json.owner}  Access: ${json.access}  typeKeywords: ${(json.typeKeywords||[]).join(', ')}`);
+  return json;
+}
+
+// Shallow-clone a Web Map / Web Scene.
+// Only the web map JSON (the pointer document) is copied — the linked
+// feature services are NOT duplicated; the clone simply keeps the same URLs.
+// ── Shared helper for simple metadata-only POSTs (no large payload) ──────────
+// Uses application/x-www-form-urlencoded with NO custom headers so the browser
+// sends it as a CORS "simple request" — no preflight needed.
+async function agolSimplePost(url, fields) {
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(fields)) {
+    if (v !== undefined && v !== null) params.append(k, v);
+  }
+  const res = await fetch(url, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body:    params.toString()
+  });
+  const raw = await res.text();
+  let json;
+  try { json = JSON.parse(raw); }
+  catch(e) { throw new Error(`Non-JSON response: ${raw.slice(0, 300)}`); }
+  if (json.error) {
+    const d = json.error;
+    const detail = d.details?.length ? ` — ${JSON.stringify(d.details)}` : '';
+    throw new Error(`${d.message}${detail} [code ${d.code}]`);
+  }
+  return json;
+}
+
+// Step 1 — Shallow-clone: copy only the web map JSON file.
+// The linked feature services are NOT copied — all layer URLs stay the same.
+async function shallowCloneItem(username, token, item) {
+  // 1a. Fetch the web map JSON from the source item.
+  //     This is a small JSON document (layer URLs, symbology, pop-up configs).
+  //     It is NOT the feature data — no rows, geometries, or attachments are downloaded.
+  const dataEndpoint = `${PORTAL}/sharing/rest/content/items/${item.id}/data?f=json&token=${encodeURIComponent(token)}`;
+  dbgReq('getItemData', `GET ${PORTAL}/sharing/rest/content/items/${item.id}/data?f=json&token=${_mask(token)}`);
+  let dataRes, dataText;
+  try {
+    dataRes = await fetch(dataEndpoint);
+    dataText = await dataRes.text();
+  } catch(netErr) {
+    dbgErr('getItemData — network failure', netErr.message);
+    throw new Error(`Network error fetching map data: ${netErr.message}`);
+  }
+  dbgRes(`getItemData — HTTP ${dataRes.status} (${dataText.length} bytes)`,
+    `Content-Type: ${dataRes.headers.get('content-type')}\n\nFirst 400 chars:\n${dataText.slice(0, 400)}`);
+  if (!dataRes.ok) throw new Error(`Could not fetch map JSON: HTTP ${dataRes.status}`);
+  if (!dataText || !dataText.trim()) throw new Error('Map data payload is empty');
+
+  let dataParsed;
+  try { dataParsed = JSON.parse(dataText); }
+  catch(e) { dbgErr('getItemData — invalid JSON', dataText.slice(0,400)); throw new Error(`Map JSON is not valid JSON: ${dataText.slice(0, 200)}`); }
+  if (dataParsed?.error) {
+    const d = dataParsed.error;
+    dbgErr('getItemData — API error envelope', JSON.stringify(dataParsed.error, null, 2));
+    throw new Error(`Map data error: ${d.message} [code ${d.code}]`);
+  }
+  dbgInfo('getItemData — parsed OK', `Top-level keys: ${Object.keys(dataParsed).join(', ')}\noperationalLayers: ${(dataParsed.operationalLayers||[]).length}  basemap: ${dataParsed.baseMap?.title||'(none)'}`);
+
+  // 1b. Fetch the thumbnail image bytes (if the item has one).
+  //     The thumbnail lives at /content/items/{id}/info/{thumbnailFilename}
+  //     and must be sent as a Blob in the multipart form — not a URL.
+  let thumbnailBlob = null;
+  let thumbnailFilename = null;
+  if (item.thumbnail) {
+    const thumbUrl = `${PORTAL}/sharing/rest/content/items/${item.id}/info/${item.thumbnail}?token=${encodeURIComponent(token)}`;
+    dbgReq('getThumbnail', `GET ${thumbUrl.replace(encodeURIComponent(token), _mask(token))}`);
+    try {
+      const thumbRes = await fetch(thumbUrl);
+      if (thumbRes.ok) {
+        thumbnailBlob = await thumbRes.blob();
+        thumbnailFilename = item.thumbnail.split('/').pop(); // e.g. "ago_downloaded.png"
+        dbgInfo('getThumbnail — OK', `${thumbnailFilename}  ${thumbnailBlob.size} bytes  type=${thumbnailBlob.type}`);
+      } else {
+        dbgInfo('getThumbnail — skipped', `HTTP ${thumbRes.status} — thumbnail will not be copied`);
+      }
+    } catch(e) {
+      dbgInfo('getThumbnail — skipped', `Fetch failed: ${e.message} — thumbnail will not be copied`);
+    }
+  } else {
+    dbgInfo('getThumbnail — skipped', 'Item has no thumbnail');
+  }
+
+  // 1c. POST to addItem using multipart/form-data.
+  //     FormData is required here because the web map JSON ('text' field) can be
+  //     large and complex, and we also need to send the thumbnail as a binary blob.
+  //     ArcGIS Online's sharing API explicitly supports multipart for addItem.
+  //     NOTE: No custom headers — token goes in the form body only.
+  const extentStr = item.extent
+    ? (Array.isArray(item.extent) ? JSON.stringify(item.extent) : String(item.extent))
+    : '';
+  const tagsStr = Array.isArray(item.tags)         ? item.tags.join(',')         : (item.tags         || '');
+  const kwStr   = Array.isArray(item.typeKeywords)  ? item.typeKeywords.join(',') : (item.typeKeywords  || '');
+  const newTitle = `${item.title} (Mapmaker Copy)`;
+
+  const form = new FormData();
+  form.append('f',            'json');
+  form.append('token',        token);
+  form.append('title',        newTitle);
+  form.append('type',         item.type || '');
+  form.append('typeKeywords', kwStr);
+  form.append('tags',         tagsStr);
+  form.append('text',         dataText);            // web map JSON, verbatim
+  if (item.snippet)           form.append('snippet',           item.snippet);       // summary
+  if (item.description)       form.append('description',       item.description);   // description
+  if (extentStr)              form.append('extent',            extentStr);
+  if (item.culture)           form.append('culture',           item.culture);
+  if (item.licenseInfo)       form.append('licenseInfo',       item.licenseInfo);
+  if (item.accessInformation) form.append('accessInformation', item.accessInformation);
+  // Thumbnail: append as a named binary blob so AGOL stores it with the new item
+  if (thumbnailBlob && thumbnailFilename) {
+    form.append('thumbnail', thumbnailBlob, thumbnailFilename);
+  }
+
+  const addItemUrl = `${PORTAL}/sharing/rest/content/users/${encodeURIComponent(username)}/addItem`;
+  dbgReq('addItem (multipart/form-data)', [
+    `POST ${addItemUrl}`,
+    `title="${newTitle}"`,
+    `type="${item.type}"`,
+    `typeKeywords="${kwStr}"`,
+    `tags="${tagsStr}"`,
+    `extent="${extentStr}"`,
+    `snippet="${(item.snippet||'').slice(0,80)}"`,
+    `description length: ${(item.description||'').length} chars`,
+    `thumbnail: ${thumbnailFilename || 'none'}  (${thumbnailBlob ? thumbnailBlob.size + ' bytes' : 'n/a'})`,
+    `text length: ${dataText.length} chars`,
+    `token: ${_mask(token)}`
+  ].join('\n'));
+
+  let addRes, addRaw;
+  try {
+    addRes = await fetch(addItemUrl, { method: 'POST', body: form });
+    addRaw = await addRes.text();
+  } catch(netErr) {
+    dbgErr('addItem — network/CORS failure', `${netErr.message}\n\nThis is often a CORS preflight block.\nCheck browser DevTools > Network tab for a failed OPTIONS request.`);
+    throw new Error(`Network error on addItem: ${netErr.message}`);
+  }
+  dbgRes(`addItem — HTTP ${addRes.status}`, `Headers: content-type=${addRes.headers.get('content-type')}\n\nFull response body:\n${addRaw}`);
+
+  let addJson;
+  try { addJson = JSON.parse(addRaw); }
+  catch(e) { dbgErr('addItem — non-JSON response', addRaw.slice(0,500)); throw new Error(`addItem response is not JSON: ${addRaw.slice(0, 300)}`); }
+  if (addJson.error) {
+    const d = addJson.error;
+    dbgErr('addItem — API error', JSON.stringify(addJson.error, null, 2));
+    const detail = d.details?.length ? ` — ${JSON.stringify(d.details)}` : '';
+    throw new Error(`${d.message}${detail} [code ${d.code}]`);
+  }
+  if (!addJson.success) { dbgErr('addItem — success=false', addRaw); throw new Error(`addItem returned success=false: ${addRaw.slice(0, 300)}`); }
+  dbgInfo('addItem — success', `New item ID: ${addJson.id}  folder: ${addJson.folder || 'root'}`);
+  return addJson;
+}
+
+// ── Deep-copy a hosted Scene Layer ───────────────────────────────────────────
+// Strategy:
+//   1. Find the associated SLPK item via /relatedItems (Service2Data relationship)
+//   2. Download the SLPK binary
+//   3. Upload the SLPK to the user's account as a new item
+//   4. Publish the SLPK to create a new hosted Scene Service
+//   5. Poll the publish job until complete, return the new Scene Service item
+//
+// If no SLPK is found (e.g. the scene was published directly from a feature layer
+// without packaging), we fall back to a metadata-only copy and warn the user.
+
+async function _agolJson(url, errLabel) {
+  const res = await fetch(url);
+  const raw = await res.text();
+  let json;
+  try { json = JSON.parse(raw); } catch(e) { throw new Error(`${errLabel}: non-JSON response: ${raw.slice(0,200)}`); }
+  if (json?.error) { throw new Error(`${errLabel}: ${json.error.message} [${json.error.code}]`); }
+  return json;
+}
+
+async function _fetchThumbnail(itemId, thumbnailPath, token) {
+  if (!thumbnailPath) return { blob: null, filename: null };
+  const url = `${PORTAL}/sharing/rest/content/items/${itemId}/info/${thumbnailPath}?token=${encodeURIComponent(token)}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return { blob: null, filename: null };
+    return { blob: await res.blob(), filename: thumbnailPath.split('/').pop() };
+  } catch(e) { return { blob: null, filename: null }; }
+}
+
+async function _postForm(url, form, label) {
+  let res, raw;
+  try { res = await fetch(url, { method: 'POST', body: form }); raw = await res.text(); }
+  catch(netErr) { dbgErr(`${label} — network`, netErr.message); throw new Error(`Network error (${label}): ${netErr.message}`); }
+  dbgRes(`${label} — HTTP ${res.status}`, raw.slice(0, 600));
+  let json;
+  try { json = JSON.parse(raw); } catch(e) { throw new Error(`${label}: non-JSON: ${raw.slice(0,300)}`); }
+  if (json?.error) {
+    dbgErr(label, JSON.stringify(json.error, null, 2));
+    const d = json.error;
+    throw new Error(`${d.message} [code ${d.code}]${d.details?.length ? ' — ' + JSON.stringify(d.details) : ''}`);
+  }
+  return json;
+}
+
+async function deepCopySceneLayer(username, token, item) {
+  const newTitle = `${item.title} (Mapmaker Copy)`;
+  const extentStr = item.extent ? (Array.isArray(item.extent) ? JSON.stringify(item.extent) : String(item.extent)) : '';
+  const tagsStr   = Array.isArray(item.tags)        ? item.tags.join(',')        : (item.tags        || '');
+  const kwStr     = Array.isArray(item.typeKeywords) ? item.typeKeywords.join(',') : (item.typeKeywords || '');
+
+  // ── Step A: Look up the source SLPK via relatedItems ─────────────────────
+  dbgReq('relatedItems', `GET .../items/${item.id}/relatedItems?relationshipType=Service2Data`);
+  const relUrl  = `${PORTAL}/sharing/rest/content/items/${item.id}/relatedItems?relationshipType=Service2Data&direction=forward&f=json&token=${encodeURIComponent(token)}`;
+  const relJson = await _agolJson(relUrl, 'relatedItems');
+  dbgRes('relatedItems', JSON.stringify(relJson, null, 2).slice(0, 600));
+
+  const slpkItem = (relJson.relatedItems || []).find(r =>
+    r.type === 'Scene Package' ||
+    (r.typeKeywords || []).some(k => k === 'Scene Package' || k === 'slpk') ||
+    (r.name || '').toLowerCase().endsWith('.slpk') ||
+    (r.name || '').toLowerCase().endsWith('.spk')
+  );
+
+  if (!slpkItem) {
+    // No SLPK found — fall back to metadata-only copy with a clear warning
+    dbgInfo('deepCopySceneLayer — no SLPK found',
+      `relatedItems returned ${(relJson.relatedItems||[]).length} item(s). Falling back to metadata-only copy.\n` +
+      `This happens when the scene was published directly from a feature layer (no .slpk package exists).`);
+    return await _metadataOnlyCopy(username, token, item, newTitle, extentStr, tagsStr, kwStr);
+  }
+
+  dbgInfo('deepCopySceneLayer — SLPK found', `id=${slpkItem.id}  name=${slpkItem.name}  size=${slpkItem.size} bytes`);
+
+  // ── Step B: Download the SLPK binary ─────────────────────────────────────
+  const slpkUrl = `${PORTAL}/sharing/rest/content/items/${slpkItem.id}/data?token=${encodeURIComponent(token)}`;
+  dbgReq('downloadSLPK', `GET /items/${slpkItem.id}/data  (~${Math.round((slpkItem.size||0)/1024/1024)} MB)`);
+  let slpkBlob;
+  try {
+    const slpkRes = await fetch(slpkUrl);
+    if (!slpkRes.ok) throw new Error(`HTTP ${slpkRes.status}`);
+    slpkBlob = await slpkRes.blob();
+    dbgInfo('downloadSLPK — OK', `${slpkBlob.size} bytes  type=${slpkBlob.type}`);
+  } catch(e) {
+    dbgErr('downloadSLPK — failed', e.message);
+    throw new Error(`Could not download SLPK: ${e.message}`);
+  }
+
+  // ── Step C: Upload the SLPK to the user's account ────────────────────────
+  const slpkFilename = (slpkItem.name || `${item.title}.slpk`).replace(/\s+/g,'_');
+  const { blob: thumbBlob, filename: thumbFilename } = await _fetchThumbnail(item.id, item.thumbnail, token);
+
+  const uploadForm = new FormData();
+  uploadForm.append('f',            'json');
+  uploadForm.append('token',        token);
+  uploadForm.append('title',        `${newTitle} Package`);
+  uploadForm.append('type',         'Scene Package');
+  uploadForm.append('tags',         tagsStr);
+  uploadForm.append('file',         slpkBlob, slpkFilename);
+  if (item.snippet)     uploadForm.append('snippet',     item.snippet);
+  if (item.description) uploadForm.append('description', item.description);
+  if (extentStr)        uploadForm.append('extent',      extentStr);
+  if (thumbBlob && thumbFilename) uploadForm.append('thumbnail', thumbBlob, thumbFilename);
+
+  const uploadUrl = `${PORTAL}/sharing/rest/content/users/${encodeURIComponent(username)}/addItem`;
+  dbgReq('uploadSLPK', `POST ${uploadUrl}  filename=${slpkFilename}`);
+  const uploadJson = await _postForm(uploadUrl, uploadForm, 'uploadSLPK');
+  if (!uploadJson.success || !uploadJson.id) throw new Error(`SLPK upload returned success=false`);
+  const slpkNewId = uploadJson.id;
+  dbgInfo('uploadSLPK — success', `New SLPK item ID: ${slpkNewId}`);
+
+  // ── Step D: Publish the SLPK to create a new hosted Scene Service ─────────
+  const publishParams = {
+    name:              newTitle.replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 98),
+    hasStaticData:     true,
+    layerInfo:         JSON.stringify({ capabilities: 'Query' })
+  };
+  const pubForm = new FormData();
+  pubForm.append('f',                'json');
+  pubForm.append('token',            token);
+  pubForm.append('itemid',           slpkNewId);
+  pubForm.append('filetype',         'scenePackage');
+  pubForm.append('publishParameters', JSON.stringify(publishParams));
+
+  const pubUrl = `${PORTAL}/sharing/rest/content/users/${encodeURIComponent(username)}/publish`;
+  dbgReq('publishSLPK', `POST ${pubUrl}  itemid=${slpkNewId}`);
+  const pubJson = await _postForm(pubUrl, pubForm, 'publishSLPK');
+
+  // publish returns an array of jobs
+  const job = (pubJson.services || [])[0];
+  if (!job) throw new Error(`publish returned no job. Response: ${JSON.stringify(pubJson).slice(0,300)}`);
+  if (job.error) throw new Error(`Publish job error: ${job.error.message} [${job.error.code}]`);
+
+  const jobId         = job.jobId;
+  const serviceItemId = job.serviceItemId;
+  dbgInfo('publishSLPK — job created', `jobId=${jobId}  serviceItemId=${serviceItemId}`);
+
+  // ── Step E: Poll the publish job until complete ───────────────────────────
+  const statusUrl = `${PORTAL}/sharing/rest/content/users/${encodeURIComponent(username)}/items/${slpkNewId}/status`;
+  let attempts = 0;
+  const MAX_ATTEMPTS = 60;  // up to 5 min (5s intervals)
+  while (attempts < MAX_ATTEMPTS) {
+    await new Promise(r => setTimeout(r, 5000));
+    attempts++;
+    let statusJson;
+    try {
+      statusJson = await _agolJson(`${statusUrl}?jobId=${jobId}&jobType=publish&f=json&token=${encodeURIComponent(token)}`, 'pollPublishJob');
+    } catch(e) { dbgInfo('pollPublishJob — retry', e.message); continue; }
+
+    const status = statusJson.status;
+    dbgInfo(`pollPublishJob [${attempts}/${MAX_ATTEMPTS}]`, `status=${status}  jobId=${jobId}`);
+
+    if (status === 'completed') {
+      dbgInfo('publishSLPK — complete', `Scene Service item ID: ${serviceItemId}`);
+      break;
+    }
+    if (status === 'failed') {
+      const msg = statusJson.statusMessage || JSON.stringify(statusJson);
+      throw new Error(`Publish job failed: ${msg}`);
+    }
+    // statuses: 'partial', 'processing', 'waiting' — keep polling
+  }
+  if (attempts >= MAX_ATTEMPTS) throw new Error(`Publish job timed out after ${MAX_ATTEMPTS * 5}s`);
+
+  // ── Step F: Update the new Scene Service item's metadata ─────────────────
+  const metaForm = new FormData();
+  metaForm.append('f',            'json');
+  metaForm.append('token',        token);
+  metaForm.append('title',        newTitle);
+  metaForm.append('tags',         tagsStr);
+  metaForm.append('typeKeywords', kwStr);
+  if (item.snippet)           metaForm.append('snippet',           item.snippet);
+  if (item.description)       metaForm.append('description',       item.description);
+  if (extentStr)              metaForm.append('extent',            extentStr);
+  if (item.licenseInfo)       metaForm.append('licenseInfo',       item.licenseInfo);
+  if (item.accessInformation) metaForm.append('accessInformation', item.accessInformation);
+  if (thumbBlob && thumbFilename) metaForm.append('thumbnail',     thumbBlob, thumbFilename);
+
+  const metaUrl = `${PORTAL}/sharing/rest/content/users/${encodeURIComponent(username)}/items/${serviceItemId}/update`;
+  dbgReq('updateSceneItemMeta', `POST ${metaUrl}`);
+  await _postForm(metaUrl, metaForm, 'updateSceneItemMeta');
+  dbgInfo('updateSceneItemMeta — done', `title, thumbnail, tags, description applied`);
+
+  return { success: true, id: serviceItemId };
+}
+
+// Fallback: metadata-only copy when no SLPK is available
+async function _metadataOnlyCopy(username, token, item, newTitle, extentStr, tagsStr, kwStr) {
+  const { blob: thumbBlob, filename: thumbFilename } = await _fetchThumbnail(item.id, item.thumbnail, token);
+  const form = new FormData();
+  form.append('f',            'json');
+  form.append('token',        token);
+  form.append('title',        newTitle);
+  form.append('type',         item.type || '');
+  form.append('typeKeywords', kwStr);
+  form.append('tags',         tagsStr);
+  if (item.url)               form.append('url',             item.url);
+  if (item.snippet)           form.append('snippet',         item.snippet);
+  if (item.description)       form.append('description',     item.description);
+  if (extentStr)              form.append('extent',          extentStr);
+  if (item.culture)           form.append('culture',         item.culture);
+  if (item.licenseInfo)       form.append('licenseInfo',     item.licenseInfo);
+  if (item.accessInformation) form.append('accessInformation', item.accessInformation);
+  if (thumbBlob && thumbFilename) form.append('thumbnail',   thumbBlob, thumbFilename);
+
+  const addUrl = `${PORTAL}/sharing/rest/content/users/${encodeURIComponent(username)}/addItem`;
+  dbgReq('_metadataOnlyCopy', `POST ${addUrl}  (fallback — no SLPK found)`);
+  const json = await _postForm(addUrl, form, '_metadataOnlyCopy');
+  if (!json.success) throw new Error(`Metadata-only copy failed: success=false`);
+  dbgInfo('_metadataOnlyCopy — done', `New item ID: ${json.id}  (points to original service URL)`);
+  return json;
+}
+
+// Step 2 — Tag: add "Mapmaker" and the Mapmaker app item ID to typeKeywords.
+// Both are added in a single updateItem call.
+const MAPMAKER_APP_ID = '0cd1cdee853c413a84bfe4b9a6931f0d';
+
+async function updateItemKeywords(username, token, itemId, originalKeywords) {
+  let kws = originalKeywords || [];
+  if (typeof kws === 'string') kws = kws.split(',').map(k => k.trim());
+  if (!kws.includes('Mapmaker'))        kws = [...kws, 'Mapmaker'];
+  if (!kws.includes(MAPMAKER_APP_ID))   kws = [...kws, MAPMAKER_APP_ID];
+
+  const updateUrl = `${PORTAL}/sharing/rest/content/users/${encodeURIComponent(username)}/items/${itemId}/update`;
+  dbgReq('updateItem typeKeywords', `POST ${updateUrl}\ntypeKeywords="${kws.join(',')}"\ntoken: ${_mask(token)}`);
+  let json;
+  try {
+    json = await agolSimplePost(updateUrl, { f: 'json', token, typeKeywords: kws.join(',') });
+  } catch(e) {
+    dbgErr('updateItem — failed', e.message);
+    throw e;
+  }
+  if (!json.success) { dbgErr('updateItem — success=false', JSON.stringify(json)); throw new Error(`updateItem returned success=false`); }
+  dbgInfo('updateItem — success', `typeKeywords now include "Mapmaker" and "${MAPMAKER_APP_ID}"`);
+  return json;
+}
+
+function parseIds(raw) {
+  return raw.split(/[\n,]+/).map(s => s.trim()).filter(s => /^[a-f0-9]{32}$/i.test(s));
+}
+
+async function run() {
+  clearLog();
+  setLoading(true);
+  try {
+    const ids = parseIds(document.getElementById('itemIds').value);
+    if (!ids.length) {
+      appendLog('error', 'No valid Item IDs found!',
+        'Each ID must be exactly 32 hex characters (letters a–f and digits 0–9). See the tip box for help finding your ID.');
+      return;
+    }
+    appendLog('info', `🗺️ Found ${ids.length} item ID${ids.length !== 1 ? 's' : ''} — let's go!`);
+
+    let token, username;
+    const cached = JSON.parse(sessionStorage.getItem(TOKEN_KEY) || 'null');
+    // Only reuse a cached token if it's fresh AND was generated with client=requestip.
+    // Discard any token that was bound to a referer — it will 498 from any other origin.
+    const cachedValid = cached && cached.expires > Date.now() && cached.client === 'requestip';
+    if (cachedValid) {
+      ({ token, username } = cached);
+      appendLog('info', `Using saved session for ${username} 🔐`);
+    } else {
+      const uname = document.getElementById('username').value.trim();
+      const pwd   = document.getElementById('password').value;
+      if (!uname || !pwd) {
+        appendLog('error', 'Please enter your ArcGIS Online username and password before running!');
+        return;
+      }
+      appendLog('info', `Signing in as "${uname}"…`);
+      const tok = await getToken(uname, pwd);
+      token = tok.token; username = uname;
+      const expires = Date.now() + 3600000;
+      sessionStorage.setItem(TOKEN_KEY, JSON.stringify({ token, username, expires, client: 'requestip' }));
+      if (document.getElementById('rememberMe').checked)
+        sessionStorage.setItem(CRED_KEY, JSON.stringify({ username: uname, password: pwd, expires }));
+      else
+        sessionStorage.removeItem(CRED_KEY);
+      showTokenBanner(username, token, expires);
+      appendLog('success', `Signed in as ${username} 🎉`);
+    }
+
+    // Item types that carry a JSON data document (fetched via /data endpoint)
+    const JSON_TYPES  = new Set(['Web Map', 'Web Scene']);
+    // Scene layer / service types — metadata-only clone (no /data JSON payload)
+    const SCENE_TYPES = new Set(['Scene Service', 'Scene Layer', 'Globe Layer', '3DObject Scene Layer', 'Building Scene Layer', 'Integrated Mesh Layer', 'Point Cloud Layer', 'Voxel Layer']);
+    const allowed     = new Set([...JSON_TYPES, ...SCENE_TYPES]);
+
+    let successCount = 0;
+
+    for (const id of ids) {
+      try {
+        appendLog('info', `Looking up item…`, id);
+        const item = await getItem(id, token);
+        if (!allowed.has(item.type)) {
+          appendLog('warning', `Skipped "${item.title}" — unsupported type "${item.type}"`,
+            `${id} — supported: Web Map, Web Scene, Scene Service, Scene Layer, and related scene layer types`);
+          continue;
+        }
+
+        const isJsonType = JSON_TYPES.has(item.type);
+        const typeLabel  = isJsonType ? 'map/scene document' : 'scene layer (deep copy)';
+
+        // ── Step 1: Clone the item ────────────────────────────────────────
+        if (!isJsonType) {
+          appendLog('info',
+            `Scene layer detected — performing deep copy (download SLPK → upload → publish). This may take several minutes for large layers.`,
+            id);
+        }
+        appendLog('info', `Step 1 — ${isJsonType ? "Copying" : "Deep-copying"} ${typeLabel} "${item.title}"…`, id);
+        const added    = isJsonType
+          ? await shallowCloneItem(username, token, item)       // copy JSON data + metadata
+          : await deepCopySceneLayer(username, token, item);    // deep copy via SLPK download + publish
+        const newId    = added.id;
+        const newTitle = `${item.title} (Mapmaker Copy)`;
+        appendLog('success',
+          `Step 1 complete — "${newTitle}" saved to your account!`,
+          `New ID: ${newId}`);
+
+        // ── Step 2: Add Mapmaker tags to typeKeywords ─────────────────────
+        appendLog('info', `Step 2 — Tagging copy with "Mapmaker" typeKeyword…`, newId);
+        await updateItemKeywords(username, token, newId, item.typeKeywords);
+        appendLog('success',
+          `Step 2 complete — "Mapmaker" tag added!`,
+          `New ID: ${newId}`,
+          `https://www.arcgis.com/home/item.html?id=${newId}`);
+
+        successCount++;
+      } catch (err) {
+        appendLog('error', `Could not process this item`, `${id} — ${err.message}`);
+      }
+    }
+
+    appendLog(
+      successCount > 0 ? 'success' : 'warning',
+      successCount > 0
+        ? `🎉 All done! ${successCount} of ${ids.length} map${ids.length !== 1 ? 's' : ''} copied and tagged with "Mapmaker".`
+        : `⚠️ Finished, but no items were copied. Check the errors above.`
+    );
+  } catch (err) {
+    appendLog('error', `Something went wrong: ${err.message}`);
+  } finally {
+    setLoading(false);
+  }
+}
+</script>
+</body>
+</html>
