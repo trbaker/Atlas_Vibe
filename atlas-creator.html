@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schools Atlas Creator — ArcGIS Instant Apps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&family=DM+Mono:wght@400;500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#faf8f4; --surface:#ffffff; --surface2:#fdf9f2; --surface3:#f7f1e4;
+  --border-soft:#e8d49a; --border-dim:#ecdcb0;
+  --gold:#b8882a; --gold-light:#d4aa5a; --gold-pale:#fdf3d8;
+  --accent2:#3d7a5c;
+  --text:#2c2416; --text-dim:#6b5a3e; --text-muted:#b0976e;
+  --danger:#c0392b; --success:#2e7d5b;
+  --radius:8px; --radius-lg:16px;
+  --gold-grad:linear-gradient(135deg,#c9982e 0%,#f0c84a 45%,#c9982e 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;top:-180px;left:-180px;width:560px;height:560px;background:radial-gradient(circle,rgba(212,170,90,0.12) 0%,transparent 70%);pointer-events:none;z-index:0}
+.glow-orb2{position:fixed;bottom:-120px;right:-120px;width:480px;height:480px;background:radial-gradient(circle,rgba(184,136,42,0.09) 0%,transparent 70%);pointer-events:none;z-index:0}
+.app-container{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:48px 28px 90px}
+.app-header{margin-bottom:52px;display:flex;align-items:flex-start;gap:18px}
+.logo-mark{width:52px;height:52px;background:var(--gold-grad);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 18px rgba(184,136,42,0.35),inset 0 1px 0 rgba(255,255,255,0.3)}
+.logo-mark svg{width:28px;height:28px}
+.header-text h1{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:34px;line-height:1.05;background:linear-gradient(135deg,#2c2416 0%,#b8882a 60%,#7a5c1e 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header-text p{font-size:13.5px;color:var(--text-dim);margin-top:5px;font-weight:300;letter-spacing:0.03em;line-height:1.55}
+.step-track{display:flex;align-items:center;gap:0;margin-bottom:32px}
+.step-item{display:flex;align-items:center;gap:8px;font-size:11.5px;font-family:'DM Mono',monospace;font-weight:500;color:var(--text-muted);letter-spacing:0.04em;transition:color 0.3s}
+.step-item.active{color:var(--gold)}
+.step-item.done{color:var(--accent2)}
+.step-num{width:27px;height:27px;border-radius:50%;border:1.5px solid var(--border-dim);display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.3s;background:var(--surface);color:var(--text-muted)}
+.step-item.active .step-num{border-color:var(--gold);background:var(--gold-pale);color:var(--gold);box-shadow:0 0 0 3px rgba(212,170,90,0.18)}
+.step-item.done .step-num{border-color:var(--accent2);background:rgba(46,125,91,0.08);color:var(--accent2)}
+.step-connector{flex:1;height:1px;background:var(--border-dim);margin:0 10px;min-width:20px}
+.step-connector.done{background:var(--gold-light)}
+.progress-wrap{background:var(--border-dim);border-radius:100px;height:3px;overflow:hidden;margin-bottom:28px}
+.progress-bar{height:100%;background:var(--gold-grad);border-radius:100px;transition:width 0.45s ease;box-shadow:0 0 6px rgba(212,170,90,0.5)}
+.panel{background:var(--surface);border:1.5px solid var(--border-soft);border-top:2px solid var(--gold-light);border-radius:var(--radius-lg);padding:34px;margin-bottom:16px;animation:slideUp 0.35s ease;box-shadow:0 2px 0 var(--border-soft),0 4px 24px rgba(184,136,42,0.08),0 1px 3px rgba(0,0,0,0.04)}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.panel-title{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;margin-bottom:6px;color:var(--text)}
+.panel-subtitle{font-size:13px;color:var(--text-dim);margin-bottom:26px;line-height:1.65;font-weight:300}
+label{display:block;font-size:11px;font-family:'DM Mono',monospace;font-weight:500;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px}
+input[type="text"],input[type="password"]{width:100%;background:var(--surface2);border:1.5px solid var(--border-dim);border-radius:var(--radius);padding:12px 14px;font-family:'Jost',sans-serif;font-size:14px;color:var(--text);outline:none;transition:all 0.2s;margin-bottom:20px}
+input[type="text"]:focus,input[type="password"]:focus{border-color:var(--gold);background:#fff;box-shadow:0 0 0 3px rgba(212,170,90,0.15)}
+input[type="text"]::placeholder,input[type="password"]::placeholder{color:var(--text-muted);font-weight:300}
+.field-wrap{margin-bottom:20px}
+.field-wrap label{margin-bottom:6px}
+.radio-group{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.radio-card{position:relative;cursor:pointer}
+.radio-card input[type="radio"]{position:absolute;opacity:0;width:0;height:0}
+.radio-card-inner{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;background:var(--surface2);border:1.5px solid var(--border-dim);border-radius:var(--radius);transition:all 0.2s}
+.radio-card:hover .radio-card-inner{border-color:var(--gold-light);background:var(--gold-pale);box-shadow:0 2px 10px rgba(184,136,42,0.1)}
+.radio-card input:checked + .radio-card-inner{border-color:var(--gold);background:var(--gold-pale);box-shadow:0 0 0 1px rgba(184,136,42,0.25),0 2px 12px rgba(184,136,42,0.12)}
+.radio-dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;transition:all 0.2s;background:#fff}
+.radio-card input:checked + .radio-card-inner .radio-dot{border-color:var(--gold);background:var(--gold-pale)}
+.radio-dot::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--gold-grad);opacity:0;transition:opacity 0.2s}
+.radio-card input:checked + .radio-card-inner .radio-dot::after{opacity:1}
+.radio-text strong{font-size:14px;font-weight:500;color:var(--text);display:block;margin-bottom:3px}
+.radio-text span{font-size:12px;color:var(--text-dim);line-height:1.55;font-weight:300}
+.badge{display:inline-block;font-family:'DM Mono',monospace;font-size:9.5px;padding:2px 7px;border-radius:4px;margin-left:6px;font-weight:500;vertical-align:middle;letter-spacing:0.04em}
+.badge-blue{background:rgba(184,136,42,0.1);color:var(--gold);border:1px solid rgba(184,136,42,0.35)}
+.badge-green{background:rgba(46,125,91,0.09);color:var(--accent2);border:1px solid rgba(46,125,91,0.3)}
+.badge-amber{background:rgba(122,92,30,0.1);color:#7a5c1e;border:1px solid rgba(122,92,30,0.3)}
+.btn-row{display:flex;gap:12px;justify-content:flex-end;margin-top:8px}
+button{font-family:'Jost',sans-serif;cursor:pointer;border:none;border-radius:var(--radius);font-size:13.5px;font-weight:500;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px;padding:11px 24px;letter-spacing:0.03em}
+.btn-primary{background:var(--gold-grad);color:#fff;font-weight:600;border:1px solid var(--gold);box-shadow:0 3px 14px rgba(184,136,42,0.3),inset 0 1px 0 rgba(255,255,255,0.2);text-shadow:0 1px 2px rgba(100,60,0,0.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(184,136,42,0.4)}
+.btn-primary:disabled{opacity:0.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-secondary{background:#fff;color:var(--text-dim);border:1.5px solid var(--border-soft)}
+.btn-secondary:hover{background:var(--gold-pale);color:var(--text);border-color:var(--gold-light)}
+.btn-secondary:disabled{opacity:0.45;cursor:not-allowed}
+.log-box{background:#fdfaf3;border:1.5px solid var(--border-dim);border-radius:var(--radius);padding:16px;font-family:'DM Mono',monospace;font-size:11.5px;color:var(--text-dim);max-height:220px;overflow-y:auto;line-height:1.9}
+.log-entry{display:flex;gap:10px;align-items:baseline}
+.log-ts{color:var(--text-muted);flex-shrink:0}
+.log-ok{color:var(--success)}
+.log-err{color:var(--danger)}
+.log-info{color:var(--gold)}
+.log-warn{color:#b07820}
+.spinner{width:15px;height:15px;border:2px solid rgba(212,170,90,0.25);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result-card{background:linear-gradient(145deg,#fffef9,#fdf8ec);border:1.5px solid var(--gold-light);border-top:2.5px solid var(--gold);border-radius:var(--radius-lg);padding:32px;animation:slideUp 0.4s ease;box-shadow:0 4px 28px rgba(184,136,42,0.12)}
+.result-icon{width:54px;height:54px;background:var(--gold-pale);border:1.5px solid var(--gold-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:18px;font-size:24px}
+.result-card h2{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:26px;color:var(--text);margin-bottom:7px}
+.result-card p{font-size:13px;color:var(--text-dim);margin-bottom:22px;line-height:1.65;font-weight:300}
+.result-links{display:flex;flex-direction:column;gap:10px}
+.result-link-item{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid var(--border-dim);border-radius:var(--radius);padding:12px 15px}
+.result-link-label{font-size:10.5px;color:var(--text-muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.09em;margin-bottom:3px}
+.result-link-val{font-size:13px;color:var(--gold);word-break:break-all;font-weight:500}
+.result-link-val a{color:var(--gold);text-decoration:none}
+.result-link-val a:hover{text-decoration:underline}
+.copy-btn{background:var(--gold-pale);border:1.5px solid var(--border-dim);border-radius:6px;color:var(--text-muted);padding:5px 10px;font-size:11px;flex-shrink:0;margin-left:10px;font-family:'DM Mono',monospace}
+.copy-btn:hover{background:var(--gold-grad);border-color:var(--gold);color:#fff}
+.error-banner{background:rgba(192,57,43,0.06);border:1.5px solid rgba(192,57,43,0.25);border-radius:var(--radius);padding:12px 16px;font-size:13px;color:var(--danger);margin-bottom:16px;display:none}
+.section-label{font-size:10.5px;font-family:'DM Mono',monospace;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px}
+.log-toggle-btn{background:none;border:1.5px solid var(--border-dim);border-radius:6px;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.06em;padding:6px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-transform:uppercase;transition:all 0.2s}
+.log-toggle-btn:hover,.log-toggle-btn.open{background:var(--gold-pale);border-color:var(--gold-light);color:var(--gold)}
+.remember-row{display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:0;text-transform:none;letter-spacing:0;font-family:'Jost',sans-serif;font-size:13px;color:var(--text-dim);font-weight:400;user-select:none}
+.remember-checkbox-wrap{position:relative;flex-shrink:0}
+.remember-checkbox-wrap input[type="checkbox"]{position:absolute;opacity:0;width:0;height:0}
+.remember-check-box{width:18px;height:18px;border:1.5px solid var(--border-soft);border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;transition:all 0.18s;color:transparent}
+.remember-checkbox-wrap input:checked + .remember-check-box{background:var(--gold-grad);border-color:var(--gold);color:#fff;box-shadow:0 2px 6px rgba(184,136,42,0.3)}
+.saved-badge{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--accent2);background:rgba(46,125,91,0.09);border:1px solid rgba(46,125,91,0.25);border-radius:4px;padding:2px 7px;letter-spacing:0.04em;margin-left:4px}
+.clear-saved-btn{background:none;border:none;color:var(--text-muted);font-size:11px;font-family:'DM Mono',monospace;padding:0 0 0 6px;cursor:pointer;text-decoration:underline}
+.clear-saved-btn:hover{color:var(--danger)}
+.hidden{display:none !important}
+@media (max-width:580px){
+  .app-container{padding:24px 16px 64px}
+  .panel{padding:22px}
+  .step-item span{display:none}
+  .header-text h1{font-size:26px}
+}
+</style>
+</head>
+<body>
+<div class="glow-orb2"></div>
+<div class="app-container">
+
+  <header class="app-header">
+    <div class="logo-mark">
+      <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="13" cy="13" r="10" stroke="white" stroke-width="1.5"/>
+        <path d="M13 3 C13 3 8 8 8 13 C8 18 13 23 13 23 C13 23 18 18 18 13 C18 8 13 3 13 3Z" stroke="white" stroke-width="1.5" fill="none"/>
+        <line x1="3" y1="13" x2="23" y2="13" stroke="white" stroke-width="1.5"/>
+        <line x1="13" y1="3" x2="13" y2="23" stroke="white" stroke-width="1.2" stroke-dasharray="2 2"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>Schools Atlas Creator</h1>
+      <p>Create and publish your own Atlas app - with curated data from Esri</p>
+    </div>
+  </header>
+
+  <div class="step-track">
+    <div class="step-item active" id="st1"><div class="step-num">1</div><span>Sign In</span></div>
+    <div class="step-connector" id="sc1"></div>
+    <div class="step-item" id="st2"><div class="step-num">2</div><span>Atlas Details</span></div>
+    <div class="step-connector" id="sc2"></div>
+    <div class="step-item" id="st3"><div class="step-num">3</div><span>Map Selection</span></div>
+    <div class="step-connector" id="sc3"></div>
+    <div class="step-item" id="st4"><div class="step-num">4</div><span>Publish</span></div>
+  </div>
+
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:25%"></div></div>
+
+  <div id="step1" class="panel">
+    <div class="panel-title">Sign in to ArcGIS Online</div>
+    <div class="panel-subtitle">Your credentials authenticate directly with ArcGIS Online. Nothing is stored or transmitted elsewhere.</div>
+    <div id="signInError" class="error-banner"></div>
+    <div class="field-wrap"><label for="username">Username</label><input type="text" id="username" placeholder="your_username" autocomplete="username"></div>
+    <div class="field-wrap"><label for="password">Password</label><input type="password" id="password" placeholder="••••••••••" autocomplete="current-password"></div>
+    <label class="remember-row" for="rememberMe">
+      <span class="remember-checkbox-wrap">
+        <input type="checkbox" id="rememberMe">
+        <span class="remember-check-box">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </span>
+      <span>Remember me for 1 hour</span>
+      <span id="savedBadge" class="saved-badge hidden">Saved · <span id="savedExpiry"></span>&nbsp;<button class="clear-saved-btn" onclick="clearCreds();document.getElementById('username').value='';document.getElementById('password').value='';event.stopPropagation();">clear</button></span>
+    </label>
+    <div id="authLog" class="log-box hidden" style="margin-top:14px;max-height:140px"></div>
+    <div class="btn-row" style="margin-top:24px">
+      <button class="btn-primary" id="btnSignIn" onclick="doSignIn()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1a6 6 0 100 12A6 6 0 007 1zm0 1.5a1.75 1.75 0 110 3.5 1.75 1.75 0 010-3.5zM7 11a4.5 4.5 0 01-3.6-1.8A5.25 5.25 0 017 8c1.37 0 2.6.52 3.6 1.2A4.5 4.5 0 017 11z"/></svg>
+        Authenticate
+      </button>
+    </div>
+  </div>
+
+  <div id="step2" class="panel hidden">
+    <div class="panel-title">Name Your Atlas App</div>
+    <div class="panel-subtitle">This will be the title of the new Instant App item in your ArcGIS Online content.</div>
+    <div class="field-wrap"><label for="appName">App Title</label><input type="text" id="appName" placeholder="e.g. Regional Atlas — Parks & Open Space"></div>
+    <div class="field-wrap"><label for="appTags">Tags <span style="color:var(--text-muted);font-family:'Jost',sans-serif;text-transform:none;letter-spacing:0">(optional, comma-separated)</span></label><input type="text" id="appTags" placeholder="atlas, instant app, maps"></div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goStep(1)">← Back</button>
+      <button class="btn-primary" onclick="goStep(3)">Continue →</button>
+    </div>
+  </div>
+
+  <div id="step3" class="panel hidden">
+    <div class="panel-title">Configure Content Group</div>
+    <div class="panel-subtitle">Choose which group provides the map content for your Atlas app.</div>
+    <div class="radio-group">
+      <label class="radio-card">
+        <input type="radio" name="groupMode" value="default" checked onchange="handleGroupMode()">
+        <div class="radio-card-inner">
+          <div class="radio-dot"></div>
+          <div class="radio-text">
+            <strong>Use the default Atlas group <span class="badge badge-blue">Recommended</span></strong>
+            <span>Points directly to the shared Esri Atlas group <code style="color:var(--gold);font-family:'DM Mono',monospace;font-size:11px">36443e9570294a1f883b5d2c5abfe6b5</code>. No group is created in your account.</span>
+          </div>
+        </div>
+      </label>
+      <label class="radio-card">
+        <input type="radio" name="groupMode" value="copy" onchange="handleGroupMode()">
+        <div class="radio-card-inner">
+          <div class="radio-dot"></div>
+          <div class="radio-text">
+            <strong>Create a new group with maps from the default <span class="badge badge-green">Editable</span></strong>
+            <span>Creates a new public group and a folder named after your atlas. Web maps from the default Atlas group are copied exactly; layers are recreated with original service URLs, metadata, and thumbnails preserved. "Baker" added to all tags.</span>
+          </div>
+        </div>
+      </label>
+      <label class="radio-card">
+        <input type="radio" name="groupMode" value="empty" onchange="handleGroupMode()">
+        <div class="radio-card-inner">
+          <div class="radio-dot"></div>
+          <div class="radio-text">
+            <strong>Create a new empty group <span class="badge badge-amber">Blank Slate</span></strong>
+            <span>Creates a fresh, empty group. You populate it with your own maps and content after creation.</span>
+          </div>
+        </div>
+      </label>
+    </div>
+    <div id="newGroupNameWrap" class="field-wrap hidden"><label for="newGroupName">New Group Name</label><input type="text" id="newGroupName" placeholder="e.g. My Atlas Content Group"></div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goStep(2)">← Back</button>
+      <button class="btn-primary" onclick="goStep(4)">Review & Publish →</button>
+    </div>
+  </div>
+
+  <div id="step4" class="panel hidden">
+    <div class="panel-title">Review & Publish</div>
+    <div class="panel-subtitle">Everything looks good? Publish to create your Schools Atlas in ArcGIS Online.</div>
+    <div style="background:var(--surface2);border:1px solid var(--border-soft);border-radius:var(--radius);padding:16px;margin-bottom:24px">
+      <div class="section-label" style="margin-bottom:10px">Publication Summary</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <tr><td style="padding:6px 0;color:var(--text-muted);width:140px;font-family:'DM Mono',monospace;font-size:12px">APP NAME</td><td id="sumAppName" style="color:var(--text)"></td></tr>
+        <tr><td style="padding:6px 0;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px">TEMPLATE</td><td style="color:var(--text)">Atlas (Instant Apps)</td></tr>
+        <tr><td style="padding:6px 0;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px">ACCOUNT</td><td id="sumUser" style="color:var(--text)"></td></tr>
+        <tr><td style="padding:6px 0;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px">GROUP MODE</td><td id="sumGroupMode" style="color:var(--text)"></td></tr>
+        <tr id="sumGroupNameRow"><td style="padding:6px 0;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px">NEW GROUP</td><td id="sumGroupName" style="color:var(--text)"></td></tr>
+        <tr><td style="padding:6px 0;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px">TAGS</td><td id="sumTags" style="color:var(--text)"></td></tr>
+        <tr><td style="padding:6px 0;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:12px">VISIBILITY</td><td style="color:var(--text)">Public</td></tr>
+      </table>
+    </div>
+    <div id="deployError" class="error-banner"></div>
+    <div id="logBox" class="log-box hidden"></div>
+    <div class="btn-row">
+      <button class="btn-secondary" id="btnBack4" onclick="goStep(3)">← Back</button>
+      <button class="btn-primary" id="btnDeploy" onclick="doDeploy()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M1.5 7L6 2.5V5.5C9.5 5.5 12 7.5 12.5 11.5C11.5 9.5 9.5 8.5 6 8.5V11.5L1.5 7Z"/></svg>
+        Publish Atlas App
+      </button>
+    </div>
+  </div>
+
+  <div id="stepSuccess" class="hidden">
+    <div class="result-card">
+      <div class="result-icon">🗺️</div>
+      <h2>Atlas App Published!</h2>
+      <p>Your Schools Atlas has been created in your ArcGIS Online account. Configuration was cloned from a working Atlas model, with only the title, group, and app ID customized to your inputs.</p>
+      <div class="result-links" id="resultLinks"></div>
+      <div style="margin-top:22px">
+        <button class="log-toggle-btn" id="logToggleBtn" onclick="toggleSuccessLog()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" id="logToggleIcon" style="transition:transform 0.2s"><path d="M2 4l4 4 4-4"/></svg>
+          Build Log
+        </button>
+        <div id="successLogWrap" class="hidden" style="margin-top:10px">
+          <div id="successLogBox" class="log-box" style="max-height:200px"></div>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <button class="btn-secondary" onclick="startOver()" style="font-size:13px">↩ Create Another App</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer style="position:fixed;bottom:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 24px;background:linear-gradient(to top,#faf8f4 75%,transparent);border-top:1px solid #ecdcb0;pointer-events:none">
+  <span style="font-family:'DM Mono',monospace;font-size:11px;color:#b0976e;letter-spacing:0.08em">Schools Atlas Creator</span>
+  <span style="width:3px;height:3px;border-radius:50%;background:#d4aa5a;display:inline-block;opacity:0.6"></span>
+  <span id="appVersion" style="font-family:'DM Mono',monospace;font-size:11px;color:#b8882a;letter-spacing:0.08em;font-weight:500">v2.0.8</span>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// SCHOOLS ATLAS CREATOR — v2.0.0
+//
+// Workflow:
+//   1. User signs in to ArcGIS Online (token cached 1 hour optional)
+//   2. User names the atlas + sets tags
+//   3. User chooses a group source: default Esri Atlas / new group with
+//      copied maps + recreated layers / new empty group
+//   4. App publishes by cloning model item de65f2db19034b28a503b136a7f6a80e
+//      and overriding only title, group, and appid — preserving signin,
+//      2D/3D toggle, save, bookmarks and all other settings exactly.
+// ═══════════════════════════════════════════════════════════════
+
+const STATE = { token:null, username:null, orgUrl:null, portal:null };
+const DEFAULT_GROUP_ID = '36443e9570294a1f883b5d2c5abfe6b5';
+const MODEL_ITEM_ID    = 'de65f2db19034b28a503b136a7f6a80e';
+const VIEWER_BASE      = 'https://webapps.maps.arcgis.com/apps/instant/atlas/index.html';
+
+// ── Version ──
+const BASE_VERSION = 8;
+function renderVersion(){ document.getElementById('appVersion').textContent = 'v2.0.' + BASE_VERSION; }
+renderVersion();
+
+// ── Credential persistence (1 hour) ──
+const CRED_KEY = 'atlasCreator_creds';
+const CRED_TTL = 60*60*1000;
+function saveCreds(u,p){ try{ localStorage.setItem(CRED_KEY, btoa(unescape(encodeURIComponent(JSON.stringify({username:u,password:p,expiresAt:Date.now()+CRED_TTL}))))); }catch(e){} }
+function loadCreds(){ try{ const r=localStorage.getItem(CRED_KEY); if(!r) return null; const p=JSON.parse(decodeURIComponent(escape(atob(r)))); if(Date.now()>p.expiresAt){clearCreds();return null;} return p; }catch(e){clearCreds();return null;} }
+function clearCreds(){ localStorage.removeItem(CRED_KEY); document.getElementById('rememberMe').checked=false; document.getElementById('savedBadge').classList.add('hidden'); }
+function updateSavedBadge(){ const b=document.getElementById('savedBadge'); const e=document.getElementById('savedExpiry'); const c=loadCreds(); if(c){ const m=Math.max(0,Math.round((c.expiresAt-Date.now())/60000)); e.textContent='expires in '+m+'m'; b.classList.remove('hidden'); }else{ b.classList.add('hidden'); } }
+setInterval(updateSavedBadge, 60000);
+(function initCreds(){ const c=loadCreds(); if(c){ document.getElementById('username').value=c.username; document.getElementById('password').value=c.password; document.getElementById('rememberMe').checked=true; } updateSavedBadge(); })();
+
+// ── Step navigation ──
+function goStep(n){
+  if(n===3){ const v=document.getElementById('appName').value.trim(); if(!v){document.getElementById('appName').focus();return;} }
+  if(n===4){
+    const mode=document.querySelector('input[name="groupMode"]:checked').value;
+    if(mode!=='default'){ const gn=document.getElementById('newGroupName').value.trim(); if(!gn){document.getElementById('newGroupName').focus();return;} }
+    updateSummary();
+  }
+  for(let i=1;i<=4;i++) document.getElementById('step'+i).classList.add('hidden');
+  document.getElementById('stepSuccess').classList.add('hidden');
+  document.getElementById('step'+n).classList.remove('hidden');
+  for(let i=1;i<=4;i++){
+    const st=document.getElementById('st'+i); st.classList.remove('active','done');
+    if(i<n) st.classList.add('done'); if(i===n) st.classList.add('active');
+    if(i<4) document.getElementById('sc'+i).classList.toggle('done', i<n);
+  }
+  document.getElementById('progressBar').style.width = (n*25)+'%';
+}
+
+function handleGroupMode(){
+  const mode = document.querySelector('input[name="groupMode"]:checked').value;
+  const wrap = document.getElementById('newGroupNameWrap');
+  if(mode==='default'){ wrap.classList.add('hidden'); }
+  else{ wrap.classList.remove('hidden'); document.getElementById('newGroupName').focus(); }
+}
+
+function updateSummary(){
+  const mode = document.querySelector('input[name="groupMode"]:checked').value;
+  const labels = {
+    default:'Use default Atlas group (36443e9570294a1f883b5d2c5abfe6b5)',
+    copy:'New group + folder with copied maps and recreated layers',
+    empty:'New empty group'
+  };
+  document.getElementById('sumAppName').textContent = document.getElementById('appName').value.trim();
+  document.getElementById('sumUser').textContent = STATE.username || '—';
+  document.getElementById('sumGroupMode').textContent = labels[mode];
+  document.getElementById('sumTags').textContent = document.getElementById('appTags').value.trim() || '(none)';
+  const row = document.getElementById('sumGroupNameRow');
+  if(mode!=='default'){ row.style.display=''; document.getElementById('sumGroupName').textContent=document.getElementById('newGroupName').value.trim(); }
+  else{ row.style.display='none'; }
+}
+
+// ── ArcGIS REST API helpers ──
+function portalUrl(){ return STATE.orgUrl || 'https://www.arcgis.com'; }
+
+async function agolPost(path, params){
+  const url = portalUrl() + '/sharing/rest' + path;
+  const body = new URLSearchParams(Object.assign({}, params, {f:'json'}));
+  const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:body.toString() });
+  if(!res.ok) throw new Error('HTTP ' + res.status + ' for ' + path);
+  const json = await res.json();
+  if(json.error) throw new Error('ArcGIS error ' + json.error.code + ': ' + json.error.message);
+  return json;
+}
+
+async function agolFetch(path, params={}){
+  const qs = new URLSearchParams(Object.assign({}, params, {f:'json', token:STATE.token})).toString();
+  const res = await fetch(portalUrl() + '/sharing/rest' + path + '?' + qs);
+  if(!res.ok) throw new Error('HTTP ' + res.status + ' for ' + path);
+  const json = await res.json();
+  if(json.error) throw new Error('ArcGIS error ' + json.error.code + ': ' + json.error.message);
+  return json;
+}
+
+async function agolSearch(params){ return agolPost('/search', params); }
+
+// ── Logging ──
+function log(type, msg){
+  const box = document.getElementById('logBox');
+  box.classList.remove('hidden');
+  const ts = new Date().toLocaleTimeString('en-US',{hour12:false});
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = '<span class="log-ts">'+ts+'</span><span class="log-'+type+'">'+msg+'</span>';
+  box.appendChild(entry);
+  box.scrollTop = box.scrollHeight;
+}
+function showError(el, msg){ el.textContent = '⚠ ' + msg; el.style.display='block'; }
+
+// ═══════════════════════════════════════════════════════════════
+// SIGN IN
+// ═══════════════════════════════════════════════════════════════
+async function doSignIn(){
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const remember = document.getElementById('rememberMe').checked;
+  const errEl = document.getElementById('signInError');
+  const authLog = document.getElementById('authLog');
+
+  errEl.style.display='none';
+  authLog.innerHTML='';
+  authLog.classList.remove('hidden');
+
+  function alog(type, msg){
+    const ts = new Date().toLocaleTimeString('en-US',{hour12:false});
+    const line = document.createElement('div');
+    line.className='log-entry';
+    line.innerHTML='<span class="log-ts">'+ts+'</span><span class="log-'+type+'">'+msg+'</span>';
+    authLog.appendChild(line);
+    authLog.scrollTop = authLog.scrollHeight;
+  }
+
+  if(!username || !password){
+    showError(errEl,'Please enter both username and password.');
+    authLog.classList.add('hidden');
+    return;
+  }
+
+  const btn = document.getElementById('btnSignIn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Signing in…';
+
+  try {
+    alog('info','Requesting token from ArcGIS Online…');
+    const tokenParams = new URLSearchParams({
+      username: username,
+      password: password,
+      client: 'requestip',
+      expiration: '120',
+      f: 'json'
+    });
+    const tokenRes = await fetch('https://www.arcgis.com/sharing/rest/generateToken', {
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: tokenParams.toString()
+    });
+    alog('info','HTTP ' + tokenRes.status + ' received');
+    const tokenData = await tokenRes.json();
+    if(tokenData.error) throw new Error('ArcGIS error ' + tokenData.error.code + ': ' + tokenData.error.message);
+    if(!tokenData.token) throw new Error('No token returned. Check credentials.');
+    alog('ok','✓ Token received');
+
+    STATE.token = tokenData.token;
+    STATE.username = username;
+    if(remember){ saveCreds(username, password); updateSavedBadge(); }
+    else { clearCreds(); }
+
+    alog('info','Fetching portal info…');
+    const selfRes = await fetch('https://www.arcgis.com/sharing/rest/portals/self', {
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({f:'json', token:STATE.token}).toString()
+    });
+    const self = await selfRes.json();
+    if(self.error) throw new Error('Portal error: ' + self.error.message);
+    STATE.portal = self;
+    STATE.orgUrl = (self.urlKey && self.customBaseUrl)
+      ? 'https://' + self.urlKey + '.' + self.customBaseUrl
+      : 'https://www.arcgis.com';
+    alog('ok','✓ Signed in as ' + username + ' — ' + STATE.orgUrl);
+
+    setTimeout(function(){
+      authLog.classList.add('hidden');
+      goStep(2);
+      document.getElementById('appName').focus();
+    }, 900);
+  } catch(err){
+    showError(errEl, err.message);
+    console.error('[Atlas] sign-in error:', err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1a6 6 0 100 12A6 6 0 007 1zm0 1.5a1.75 1.75 0 110 3.5 1.75 1.75 0 010-3.5zM7 11a4.5 4.5 0 01-3.6-1.8A5.25 5.25 0 017 8c1.37 0 2.6.52 3.6 1.2A4.5 4.5 0 017 11z"/></svg> Authenticate';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PUBLISH
+// ═══════════════════════════════════════════════════════════════
+async function doDeploy(){
+  const btn = document.getElementById('btnDeploy');
+  const errEl = document.getElementById('deployError');
+  errEl.style.display='none';
+  document.getElementById('logBox').innerHTML='';
+
+  btn.disabled = true;
+  document.getElementById('btnBack4').disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Publishing…';
+
+  const appTitle = document.getElementById('appName').value.trim();
+  const appTagsRaw = document.getElementById('appTags').value.trim();
+  const appTags = appTagsRaw
+    ? appTagsRaw.split(',').map(function(t){return t.trim();}).filter(Boolean).join(', ')
+    : 'atlas, instant app';
+  const groupMode = document.querySelector('input[name="groupMode"]:checked').value;
+  const newGroupTitle = document.getElementById('newGroupName').value.trim();
+
+  try {
+    let groupId = DEFAULT_GROUP_ID;
+
+    // Group operations
+    if(groupMode === 'empty'){
+      log('info', 'Creating empty group "' + newGroupTitle + '"…');
+      const grp = await agolPost('/community/createGroup', {
+        title: newGroupTitle, access:'private',
+        description:'Group for Schools Atlas Instant App',
+        tags:'atlas, instant app, schools',
+        token: STATE.token
+      });
+      groupId = grp.group.id;
+      log('ok', '✓ Group created: ' + groupId);
+    } else if(groupMode === 'copy'){
+      groupId = await createCopyGroup(newGroupTitle, appTitle);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // CLONE the working Atlas Instant App from the model item,
+    // then update only the fields the user customized.
+    //
+    // copyItem creates a full byte-for-byte duplicate including the
+    // exact typeKeywords, properties, data JSON shape, and any other
+    // internal fields the Esri configurator validates against.
+    // We then patch just the title, tags, description, app data
+    // (group + title), and viewer URL.
+    // ══════════════════════════════════════════════════════════════
+
+    log('info', 'Reading working Atlas Instant App (' + MODEL_ITEM_ID + ')…');
+
+    // ── Step 1: Fetch the model item's metadata and data ──
+    // copyItem fails cross-account with "User folder does not exist".
+    // Instead we manually read the model and recreate it via addItem.
+    let modelMeta, modelData;
+    try {
+      modelMeta = await agolFetch('/content/items/' + MODEL_ITEM_ID);
+    } catch(e){
+      throw new Error('Cannot read model item metadata: ' + e.message + '. Make sure item ' + MODEL_ITEM_ID + ' is publicly shared.');
+    }
+    try {
+      modelData = await agolFetch('/content/items/' + MODEL_ITEM_ID + '/data');
+    } catch(e){
+      throw new Error('Cannot read model item data: ' + e.message);
+    }
+    log('ok', '✓ Model loaded — type: ' + modelMeta.type + ', typeKeywords: ' + (modelMeta.typeKeywords || []).length + ' keywords');
+
+    // ── Step 2: Build the new item by replicating every relevant field ──
+    // Modify the data JSON in-memory to apply user overrides BEFORE creating
+    const cloneData = JSON.parse(JSON.stringify(modelData));
+    if(cloneData.values){
+      cloneData.values.title       = appTitle;
+      cloneData.values.headerTitle = appTitle;
+      cloneData.values.group       = groupId;
+      // appid will be patched in the post-create update
+    }
+    if(cloneData.configurationSettings){
+      cloneData.configurationSettings.forEach(function(section){
+        (section.fields || []).forEach(function(field){
+          if(field.fieldName === 'title')       field.value = appTitle;
+          if(field.fieldName === 'headerTitle') field.value = appTitle;
+          if(field.fieldName === 'group')       field.value = groupId;
+        });
+      });
+    }
+
+    // ── Step 3: Build addItem payload using the model's exact fields ──
+    const typeKwArray = Array.isArray(modelMeta.typeKeywords)
+      ? modelMeta.typeKeywords
+      : (typeof modelMeta.typeKeywords === 'string' ? modelMeta.typeKeywords.split(',') : []);
+
+    const payload = {
+      title:        appTitle,
+      type:         modelMeta.type,
+      typeKeywords: typeKwArray.join(','),
+      tags:         appTags,
+      snippet:      modelMeta.snippet || appTitle,
+      description:  modelMeta.description || ('Schools Atlas — ' + appTitle),
+      url:          VIEWER_BASE + '?appid=PLACEHOLDER',
+      text:         JSON.stringify(cloneData),
+      token:        STATE.token
+    };
+
+    // Copy over additional fields the configurator may validate against
+    if(modelMeta.accessInformation) payload.accessInformation = modelMeta.accessInformation;
+    if(modelMeta.licenseInfo)        payload.licenseInfo       = modelMeta.licenseInfo;
+    if(modelMeta.culture)            payload.culture           = modelMeta.culture;
+    if(modelMeta.extent)             payload.extent            = JSON.stringify(modelMeta.extent);
+    if(modelMeta.properties)         payload.properties        = JSON.stringify(modelMeta.properties);
+
+    log('info', '  Replicating fields: ' + Object.keys(payload).filter(function(k){return k!=='token'&&k!=='text';}).join(', '));
+    log('info', '  typeKeywords (' + typeKwArray.length + '): ' + typeKwArray.join(', '));
+
+    // ── Step 4: Create the new item ──
+    log('info', 'Creating Atlas Instant App in your account…');
+    const itemRes = await agolPost('/content/users/' + STATE.username + '/addItem', payload);
+    const appItemId = itemRes.id;
+    if(!appItemId) throw new Error('addItem returned no item ID — response: ' + JSON.stringify(itemRes));
+    log('ok', '✓ Instant App created: ' + appItemId);
+
+    // ── Step 5: Patch the URL with the real item ID and embed appid in data ──
+    log('info', 'Patching URL with new item ID…');
+    if(cloneData.values) cloneData.values.appid = appItemId;
+    await agolPost('/content/users/' + STATE.username + '/items/' + appItemId + '/update', {
+      url:   VIEWER_BASE + '?appid=' + appItemId,
+      text:  JSON.stringify(cloneData),
+      token: STATE.token
+    });
+    log('ok', '✓ URL and appid finalized.');
+
+    // ── Step 5: Verify the clone retained Instant App characteristics ──
+    log('info', 'Verifying clone integrity…');
+    try {
+      const newMeta = await agolFetch('/content/items/' + appItemId);
+      const tk = (newMeta.typeKeywords || []).join(', ');
+      log('info', '  type: ' + newMeta.type);
+      log('info', '  typeKeywords: ' + tk);
+      if(tk.indexOf('Instant App') !== -1){
+        log('ok', '  ✓ Item is marked as Instant App — configurator should open it.');
+      } else {
+        log('warn', '  ⚠ "Instant App" not found in typeKeywords — configurator may not recognize this.');
+      }
+    } catch(verifyErr){
+      log('warn', '  Verification fetch failed: ' + verifyErr.message);
+    }
+
+    // ── Set sharing to Public (Everyone) ──
+    // The /share endpoint with everyone=true sets the item's access
+    // field to 'public', which is what shows as "Everyone" in the
+    // ArcGIS Online UI sharing dialog.
+    log('info', 'Setting sharing to Public (Everyone)…');
+    const shareRes = await agolPost('/content/users/' + STATE.username + '/items/' + appItemId + '/share', {
+      everyone: 'true',
+      org:      'true',
+      account:  'true',
+      token:    STATE.token
+    });
+    log('info', '  Share response: ' + JSON.stringify(shareRes).substring(0, 200));
+
+    // Verify the sharing was applied
+    log('info', 'Verifying sharing level…');
+    try {
+      const verifyMeta = await agolFetch('/content/items/' + appItemId);
+      log('info', '  access: ' + verifyMeta.access);
+      if(verifyMeta.access === 'public'){
+        log('ok', '✓ Item is shared with Everyone (Public).');
+      } else {
+        log('warn', '  ⚠ Access is "' + verifyMeta.access + '", not "public". Retrying via portal-level share…');
+        // Retry using the portal-level share endpoint as fallback
+        await agolPost('/content/items/' + appItemId + '/share', {
+          everyone: 'true',
+          org:      'true',
+          token:    STATE.token
+        });
+        const reverify = await agolFetch('/content/items/' + appItemId);
+        log('info', '  After retry — access: ' + reverify.access);
+        if(reverify.access === 'public'){
+          log('ok', '✓ Item is now shared with Everyone (Public).');
+        } else {
+          log('warn', '  ⚠ Item access remains "' + reverify.access + '". Manually share via item page if needed.');
+        }
+      }
+    } catch(verifyErr){
+      log('warn', '  Sharing verification failed: ' + verifyErr.message);
+    }
+
+    // ── Final URL reset ──
+    // After publish + share, update the item's URL to use the bare
+    // arcgis.com domain (no subdomain). This is the cleanest public
+    // URL for sharing the Atlas app.
+    const finalAppUrl = 'https://arcgis.com/apps/instant/atlas/index.html?appid=' + appItemId;
+    log('info', 'Resetting app URL to: ' + finalAppUrl);
+    try {
+      await agolPost('/content/users/' + STATE.username + '/items/' + appItemId + '/update', {
+        url:   finalAppUrl,
+        token: STATE.token
+      });
+      log('ok', '✓ App URL reset to arcgis.com domain.');
+    } catch(urlErr){
+      log('warn', '  URL reset failed: ' + urlErr.message);
+    }
+
+    const appUrl = finalAppUrl;
+    const itemUrl = portalUrl() + '/home/item.html?id=' + appItemId;
+    log('ok', '🎉 Atlas Instant App published!');
+    showSuccess(appTitle, appItemId, appUrl, itemUrl, groupId, groupMode);
+  } catch(err){
+    log('err', 'Deployment failed: ' + err.message);
+    showError(errEl, err.message);
+    btn.disabled = false;
+    document.getElementById('btnBack4').disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M1.5 7L6 2.5V5.5C9.5 5.5 12 7.5 12.5 11.5C11.5 9.5 9.5 8.5 6 8.5V11.5L1.5 7Z"/></svg> Retry Publish';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COPY GROUP — create group, folder, copy web maps + recreate layers
+// ═══════════════════════════════════════════════════════════════
+async function createCopyGroup(newGroupTitle, appTitle){
+  log('info', 'Creating new public group "' + newGroupTitle + '"…');
+  const grpRes = await agolPost('/community/createGroup', {
+    title: newGroupTitle, access:'public',
+    description:'Schools Atlas content group',
+    tags:'atlas, instant app, schools, baker',
+    token: STATE.token
+  });
+  const groupId = grpRes.group.id;
+  log('ok', '✓ Group: ' + groupId);
+
+  log('info', 'Creating folder "' + appTitle + '"…');
+  let folderId = null;
+  try {
+    const fr = await agolPost('/content/users/' + STATE.username + '/createFolder', { title: appTitle, token: STATE.token });
+    folderId = fr.folder ? fr.folder.id : null;
+    if(folderId) log('ok', '✓ Folder: ' + folderId);
+    else log('warn', '  No folder ID returned — items will go to root.');
+  } catch(e){ log('warn', '  Folder creation failed: ' + e.message); }
+
+  log('info', 'Fetching items from default Atlas group…');
+  let start = 1, total = Infinity;
+  const sourceItems = [];
+  while(start <= total){
+    const sr = await agolSearch({ q:'group:'+DEFAULT_GROUP_ID, num:'100', start:String(start), token: STATE.token });
+    total = sr.total || 0;
+    const r = sr.results || [];
+    r.forEach(function(it){ sourceItems.push(it); });
+    start += r.length;
+    if(r.length === 0) break;
+  }
+  log('info', 'Found ' + sourceItems.length + ' items.');
+
+  async function uploadThumb(srcId, srcMeta, newId){
+    if(!srcMeta.thumbnail) return;
+    try {
+      const url = 'https://www.arcgis.com/sharing/rest/content/items/' + srcId + '/info/' + srcMeta.thumbnail + '?token=' + encodeURIComponent(STATE.token);
+      const f = await fetch(url);
+      if(!f.ok) return;
+      const blob = await f.blob();
+      const ext = srcMeta.thumbnail.split('.').pop() || 'png';
+      const fd = new FormData();
+      fd.append('thumbnail', new File([blob], 'thumbnail.'+ext, {type: blob.type || 'image/'+ext}));
+      fd.append('token', STATE.token);
+      fd.append('f', 'json');
+      const up = await fetch('https://www.arcgis.com/sharing/rest/content/users/' + STATE.username + '/items/' + newId + '/update', { method:'POST', body: fd });
+      const upJson = await up.json();
+      if(upJson.success) log('info', '    🖼 Thumbnail uploaded');
+    } catch(e){ log('warn', '    Thumbnail error: ' + e.message); }
+  }
+
+  let processed = 0, webMaps = 0, layers = 0, failed = 0;
+  for(let i = 0; i < sourceItems.length; i++){
+    const src = sourceItems[i];
+    const isMap = src.type === 'Web Map';
+    const icon = isMap ? '🗺' : '📄';
+    try {
+      const meta = await agolFetch('/content/items/' + src.id);
+
+      let tags = Array.isArray(meta.tags) ? meta.tags.slice() : (meta.tags ? meta.tags.split(',').map(function(t){return t.trim();}) : []);
+      if(!tags.map(function(t){return t.toLowerCase();}).includes('baker')) tags.push('Baker');
+      const tagsStr = tags.join(',');
+      const typeKwStr = Array.isArray(meta.typeKeywords) ? meta.typeKeywords.join(',') : (meta.typeKeywords || '');
+      const accessInf = Array.isArray(meta.accessInformation) ? meta.accessInformation.join(',') : (meta.accessInformation || '');
+
+      const addPath = folderId
+        ? '/content/users/' + STATE.username + '/' + folderId + '/addItem'
+        : '/content/users/' + STATE.username + '/addItem';
+
+      let text = '', itemUrl = '';
+      if(isMap){
+        try { const md = await agolFetch('/content/items/' + src.id + '/data'); text = JSON.stringify(md); }
+        catch(e){ log('warn', '    Map data fetch failed for "' + src.title + '"'); }
+      } else {
+        itemUrl = meta.url || '';
+      }
+
+      const r = await agolPost(addPath, {
+        title: meta.title || src.title,
+        snippet: meta.snippet || '',
+        description: meta.description || '',
+        accessInformation: accessInf,
+        licenseInfo: meta.licenseInfo || '',
+        tags: tagsStr,
+        type: meta.type || src.type,
+        typeKeywords: typeKwStr,
+        url: itemUrl,
+        extent: meta.extent ? JSON.stringify(meta.extent) : '',
+        culture: meta.culture || '',
+        text: text,
+        token: STATE.token
+      });
+      const newId = r.id;
+      if(!newId){ log('warn', '  ['+(i+1)+'/'+sourceItems.length+'] '+icon+' "'+src.title+'" — no item ID'); failed++; continue; }
+
+      await uploadThumb(src.id, meta, newId);
+
+      await agolPost('/content/users/' + STATE.username + '/items/' + newId + '/share', {
+        everyone:'true', org:'true', groups:groupId, token: STATE.token
+      });
+
+      processed++;
+      if(isMap) webMaps++; else layers++;
+      log('info', '  ['+(i+1)+'/'+sourceItems.length+'] '+icon+' "'+(meta.title || src.title)+'" → '+newId);
+    } catch(err){
+      failed++;
+      log('warn', '  ['+(i+1)+'/'+sourceItems.length+'] "'+src.title+'" failed: ' + err.message);
+    }
+  }
+  log('ok', '✓ ' + processed + '/' + sourceItems.length + ' created — ' + webMaps + ' maps, ' + layers + ' layers, ' + failed + ' failed');
+  return groupId;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BUILD ATLAS DATA — clone model, apply only user overrides
+// ═══════════════════════════════════════════════════════════════
+function buildAtlasData(title, groupId, appItemId, modelData){
+  const overrides = {
+    group: groupId,
+    title: title,
+    headerTitle: title
+  };
+  if(appItemId) overrides.appid = appItemId;
+
+  // PATH 1: clone model
+  if(modelData && modelData.configurationSettings && modelData.values){
+    const configSettings = JSON.parse(JSON.stringify(modelData.configurationSettings));
+    const values = Object.assign({}, modelData.values, overrides);
+
+    configSettings.forEach(function(section){
+      (section.fields || []).forEach(function(field){
+        if(overrides.hasOwnProperty(field.fieldName)){
+          field.value = overrides[field.fieldName];
+        }
+      });
+    });
+
+    log('info', '  Cloned model schema, applied overrides: ' + Object.keys(overrides).join(', '));
+    return { configurationSettings: configSettings, values: values };
+  }
+
+  // PATH 2: fallback
+  log('warn', '  Model fetch failed — using fallback config.');
+  return {
+    configurationSettings: [
+      { category:'About', fields:[
+        { type:'string', fieldName:'title', label:'App title', value:title },
+        { type:'string', fieldName:'group', label:'Group ID', value:groupId }
+      ]},
+      { category:'Interactivity', fields:[
+        { type:'boolean', fieldName:'signin',     label:'Enable Sign in',  value:true },
+        { type:'boolean', fieldName:'viewSwitch', label:'2D/3D Toggle',    value:true },
+        { type:'boolean', fieldName:'save',       label:'Save',            value:true },
+        { type:'boolean', fieldName:'bookmarks',  label:'Bookmarks',       value:true },
+        { type:'boolean', fieldName:'share',      label:'Share',           value:true },
+        { type:'boolean', fieldName:'search',     label:'Search',          value:true },
+        { type:'boolean', fieldName:'legend',     label:'Legend',          value:true }
+      ]}
+    ],
+    values: Object.assign({}, overrides, {
+      theme:'light',
+      signin:true, signIn:true, enableSignIn:true,
+      viewSwitch:true, enableViewSwitch:true, enable3D:true, toggle3D:true,
+      save:true, bookmarks:true, share:true, search:true, legend:true,
+      googleAnalytics:false
+    })
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUCCESS SCREEN
+// ═══════════════════════════════════════════════════════════════
+function showSuccess(appTitle, appItemId, appUrl, itemUrl, groupId, groupMode){
+  for(let i=1; i<=4; i++) document.getElementById('step'+i).classList.add('hidden');
+  for(let i=1; i<=4; i++){
+    const st = document.getElementById('st'+i);
+    st.classList.remove('active'); st.classList.add('done');
+    if(i<4) document.getElementById('sc'+i).classList.add('done');
+  }
+  document.getElementById('progressBar').style.width = '100%';
+
+  const configUrl = 'https://www.arcgis.com/apps/instantgallery/index.html#/edit/' + appItemId;
+  const items = [
+    { label:'App Title',     value:appTitle, link:null },
+    { label:'Item ID',       value:appItemId, link:null },
+    { label:'Live App',      value:'Open Atlas App', link:appUrl },
+    { label:'Item Page',     value:'View in ArcGIS Online', link:itemUrl },
+    { label:'Configure App', value:'Open in Instant Apps Configurator', link:configUrl },
+    { label:'Group',         value: groupMode==='default' ? 'Default ('+DEFAULT_GROUP_ID+')' : 'Created: '+groupId, link:null }
+  ];
+
+  const linksEl = document.getElementById('resultLinks');
+  linksEl.innerHTML = '';
+  items.forEach(function(item){
+    const div = document.createElement('div');
+    div.className = 'result-link-item';
+    const inner = document.createElement('div');
+    inner.style.flex = '1';
+    inner.innerHTML = '<div class="result-link-label">' + item.label + '</div><div class="result-link-val">' + (item.link ? '<a href="'+item.link+'" target="_blank" rel="noopener">'+item.value+'</a>' : item.value) + '</div>';
+    div.appendChild(inner);
+    if(item.link){
+      const cb = document.createElement('button');
+      cb.className = 'copy-btn';
+      cb.textContent = 'Copy';
+      cb.onclick = function(){ navigator.clipboard.writeText(item.link); cb.textContent='✓'; setTimeout(function(){cb.textContent='Copy';}, 1500); };
+      div.appendChild(cb);
+    }
+    linksEl.appendChild(div);
+  });
+
+  document.getElementById('stepSuccess').classList.remove('hidden');
+  document.getElementById('successLogBox').innerHTML = document.getElementById('logBox').innerHTML;
+  document.getElementById('successLogWrap').classList.add('hidden');
+  document.getElementById('logToggleBtn').classList.remove('open');
+  document.getElementById('logToggleIcon').style.transform = 'rotate(0deg)';
+}
+
+function toggleSuccessLog(){
+  const wrap = document.getElementById('successLogWrap');
+  const btn = document.getElementById('logToggleBtn');
+  const icon = document.getElementById('logToggleIcon');
+  if(wrap.classList.contains('hidden')){
+    wrap.classList.remove('hidden');
+    btn.classList.add('open');
+    icon.style.transform = 'rotate(180deg)';
+    const box = document.getElementById('successLogBox');
+    box.scrollTop = box.scrollHeight;
+  } else {
+    wrap.classList.add('hidden');
+    btn.classList.remove('open');
+    icon.style.transform = 'rotate(0deg)';
+  }
+}
+
+function startOver(){
+  STATE.token=null; STATE.username=null; STATE.orgUrl=null; STATE.portal=null;
+  const c = loadCreds();
+  document.getElementById('username').value = c ? c.username : '';
+  document.getElementById('password').value = c ? c.password : '';
+  document.getElementById('rememberMe').checked = !!c;
+  updateSavedBadge();
+  document.getElementById('appName').value = '';
+  document.getElementById('appTags').value = '';
+  document.getElementById('newGroupName').value = '';
+  document.querySelectorAll('input[name="groupMode"]')[0].checked = true;
+  document.getElementById('newGroupNameWrap').classList.add('hidden');
+  document.getElementById('logBox').innerHTML = '';
+  document.getElementById('logBox').classList.add('hidden');
+  document.getElementById('successLogBox').innerHTML = '';
+  document.getElementById('successLogWrap').classList.add('hidden');
+  document.getElementById('deployError').style.display = 'none';
+  document.getElementById('btnDeploy').disabled = false;
+  document.getElementById('btnDeploy').innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M1.5 7L6 2.5V5.5C9.5 5.5 12 7.5 12.5 11.5C11.5 9.5 9.5 8.5 6 8.5V11.5L1.5 7Z"/></svg> Publish Atlas App';
+  goStep(1);
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){
+    if(!document.getElementById('step1').classList.contains('hidden')) doSignIn();
+  }
+});
+</script>
+</body>
+</html>
