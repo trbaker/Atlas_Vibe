@@ -417,7 +417,7 @@
     </div>
     <div class="card">
       <span class="card-icon">✏️</span>
-      <h2>Geo Sketch Viewer</h2>
+      <h2>GPS Data Mapper</h2>
       <p>View and explore geographic sketches overlaid on interactive maps — perfect for sharing spatial ideas and hand-drawn geodata!</p>
       <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.5rem;">
         <a href="https://trbaker.github.io/Atlas_Vibe/geo-sketch-viewer.html" target="_blank" class="proj-btn proj-launch">🚀 Open Live App</a>
