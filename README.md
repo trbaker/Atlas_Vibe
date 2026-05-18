@@ -410,7 +410,7 @@
     <div class="card">
       <span class="card-icon">🗺️</span>
       <h2>Schools Atlas Creator</h2>
-      <p>A step-by-step wizard to create and publish your own ArcGIS Instant Atlas app — sign in, name your atlas, pick a content group, and publish in minutes!</p>
+      <p>A step-by-step wizard to create and publish your own ArcGIS Atlas app — sign in, name your atlas, pick a content group, and publish in minutes!</p>
       <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.5rem;">
         <a href="https://trbaker.github.io/Atlas_Vibe/atlas-creator.html" target="_blank" class="proj-btn proj-launch">🚀 Open Live App</a>
       </div>
@@ -418,7 +418,7 @@
     <div class="card">
       <span class="card-icon">✏️</span>
       <h2>GPS Data Mapper</h2>
-      <p>View and explore geographic sketches overlaid on interactive maps — perfect for sharing spatial ideas and hand-drawn geodata!</p>
+      <p>View and explore GPS data overlaid on an interactive map — perfect for sharing!</p>
       <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.5rem;">
         <a href="https://trbaker.github.io/Atlas_Vibe/geo-sketch-viewer.html" target="_blank" class="proj-btn proj-launch">🚀 Open Live App</a>
       </div>
