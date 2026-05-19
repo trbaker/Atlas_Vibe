@@ -1,6 +1,5 @@
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Atlas Vibe Coding 🦄</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
@@ -463,7 +462,7 @@
 
 <footer>
   <span class="footer-emoji">🦄</span>
-  Made with 💖 &amp; lots of sparkles by Atlas Vibe Coding
+  Made with 💖💖💖 &amp; lots of sparkles by Atlas Vibe Coding
   <span class="footer-emoji" style="animation-delay:0.5s">🌈</span>
 </footer>
 
